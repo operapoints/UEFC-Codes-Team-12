@@ -7,7 +7,7 @@ def GetMaxThrust(UEFC, V):
 
     ct0 = 0.2093
     ct1 = -0.2484
-    ct2 = -0.1386
+    ct2 = -0.1386 #
 
     Tmax_static = 2               # DO NOT CHANGE, Maximum thrust desired at static conditions
     Rprop       = 0.1016          # Propeller radius (m)
