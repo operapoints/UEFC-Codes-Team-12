@@ -17,6 +17,7 @@ plt.style.use(os.path.join(os.path.dirname(__file__), "uefc.mplstyle"))
 
 from GetUEFC        import UEFC
 from opt_obj        import opt_obj
+from calc_obj       import calc_obj
 from report_opt_obj import report_opt_obj
 
 def scan_ARS(aircraft: UEFC,
@@ -178,12 +179,15 @@ if __name__ == "__main__":
     aircraft.e0       = 1.0     # Span efficiency for straight level flight
 
     # Wing bending and material properties
-    aircraft.dbmax    = 0.1     # tip displacement bending constraint
+    aircraft.dbmax    = 0.1  # tip displacement bending constraint
     aircraft.rhofoam  = 32.     # kg/m^3. high load foam
     aircraft.Efoam    = 19.3E6  # Pa.     high load foam
 
     num_division = 41
-    scan_ARS(aircraft, 3, 7, 0.3, 0.5, num_division, show_plots=True)
+    scan_ARS(aircraft, 3, 15, 0.1, 0.6, num_division, show_plots=True)
+    #0.728
+    #0.12
+    #print(calc_obj(aircraft,[1.216,0.728,0.12],7,0.3))
 
 
 
