@@ -170,6 +170,8 @@ if __name__ == "__main__":
 
     # Geometry parameters
     aircraft.taper    = ct/cr   # taper ratio
+    aircraft.taper    = .7
+
     aircraft.dihedral = 10.0    # Wing dihedral (degrees)
     aircraft.tau      = 0.12    # thickness-to-chord ratio
 
@@ -182,9 +184,5 @@ if __name__ == "__main__":
     aircraft.rhofoam  = 32.     # kg/m^3. high load foam
     aircraft.Efoam    = 19.3E6  # Pa.     high load foam
 
-    num_division = 41
+    num_division = 60
     scan_ARS(aircraft, 3, 7, 0.3, 0.5, num_division, show_plots=True)
-
-
-
-
