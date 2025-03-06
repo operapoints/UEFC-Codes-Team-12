@@ -5,22 +5,22 @@ def GetMaxThrust(UEFC, V):
     # You need to finish this file
     rho = UEFC.rho
 
-    ct0 = np.nan
-    ct1 = np.nan
-    ct2 = np.nan
+    ct0 = 0.2093
+    ct1 = -0.2484
+    ct2 = -0.1386
 
     Tmax_static = 2               # DO NOT CHANGE, Maximum thrust desired at static conditions
-    Rprop       = np.nan          # Propeller radius (m)
-    Aprop       = np.nan          # Propeller disk area
+    Rprop       = 0.1016          # Propeller radius (m)
+    Aprop       = np.pi*Rprop**2          # Propeller disk area
 
     Omega  = np.sqrt(Tmax_static/(0.5*rho*Rprop**2*Aprop*ct0))
 
     # calculate Lambda, CT, and then Tmax from given variables
-    Lambda =  np.nan # Advance ratio
+    Lambda = V/(Omega*Rprop) # Advance ratio
 
-    CT = np.nan # Thrust coefficient
+    CT = ct0+ct1*Lambda+ct2*Lambda**2 # Thrust coefficient
 
-    Tmax = np.nan
+    Tmax = CT*0.5*rho*((Omega*Rprop)**2)*Aprop
 
     return Tmax
 
