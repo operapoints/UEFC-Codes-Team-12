@@ -8,18 +8,18 @@ def GetWfuse(UEFC, AR, S):
     # mfusel, mfuseS, b0, and S0
 
     # Calculate fuselage weight from UEFC parameters and S and AR
-    mfuse0 = np.nan  # fixed mass (kg)
-    mfusel = np.nan  # span (length) dependent mass (kg)
-    mfuseS = np.nan  # wing area dependent mass (kg)
+    mfuse0 = .185  # fixed mass (kg)
+    mfusel = .060  # span (length) dependent mass (kg)
+    mfuseS = .026  # wing area dependent mass (kg)
 
-    SPV = np.nan   # Wing area for which mfusel and mfuseS were calculated (m^2)
-    bPV = np.nan    # Wingspan for which mfusel and mfuseS were calculated (m)
+    SPV = 1.225   # Wing area for which mfusel and mfuseS were calculated (m^2)
+    bPV = 1.5    # Wingspan for which mfusel and mfuseS were calculated (m)
 
     b = UEFC.wing_dimensions(AR, S)["Span"]
     g = UEFC.g
 
     # Calculate Wfuse from the given variables
-    Wfuse = np.nan
+    Wfuse = (mfuse0 + mfusel * (b/bPV) + mfuseS * (S/SPV))*g
 
     return Wfuse
 
