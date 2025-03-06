@@ -9,7 +9,7 @@ def GetCDi(UEFC, opt_vars, AR, S):
     e   = UEFC.span_efficiency(opt_vars, AR, S)
 
     # calculate CDi from the given variables
-    CDi = np.nan
+    CDi = (CL**2)/(np.pi*e*AR)
 
     return CDi
 

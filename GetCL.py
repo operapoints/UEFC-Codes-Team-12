@@ -11,7 +11,7 @@ def GetCL(UEFC, opt_vars, AR, S):
     W  = UEFC.weight(opt_vars, AR, S)["Total"]
 
     # calculate CL from given variables
-    CL = np.nan
+    CL = (N*W)/(1/2*rho*(V**2)*S)
 
     return CL
 
