@@ -15,7 +15,12 @@ def calc_obj(UEFC, opt_vars, AR, S):
 
     # Calculate the objective function (velocity) in m/s
     # print("objective called")
-    obj = GetV(UEFC, opt_vars, AR, S)
+    N = opt_vars[0]
+    taper = opt_vars[1]
+    tau = opt_vars[2]
+    UEFC.taper = taper
+    UEFC.tau = tau
+    obj = GetV(UEFC, opt_vars[0:], AR, S)
     
     return obj
     

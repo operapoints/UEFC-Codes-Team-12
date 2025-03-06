@@ -10,6 +10,10 @@ def Getdb(UEFC, opt_vars, AR, S):
     Wfuse   = UEFC.fuselage_weight(AR, S)
     Wpay    = UEFC.payload_weight(opt_vars, AR, S)
     N       = opt_vars[0]
+    taper = opt_vars[1]
+    tau = opt_vars[2]
+    UEFC.taper = taper
+    UEFC.tau = tau
     
     db = (0.018*N*(Wfuse+Wpay)/(Efoam*tau*(tau**2+0.7*epsilon**2))*
          (1+l)**3*(1+2*l)*AR**3/S)

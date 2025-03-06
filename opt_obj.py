@@ -3,6 +3,14 @@ from scipy.optimize import minimize
 from GetUEFC        import UEFC
 from calc_obj       import calc_obj
 
+#opt_vars: 0:N 1:taper 2:tau
+def obj_fcn(opt_vars):
+    N = opt_vars[0]
+    taper = opt_vars[1]
+    tau = opt_vars[2]
+    
+
+
 def opt_obj(UEFC, AR, S):
 
     # YOU SHOULD NOT NEED TO CHANGE THIS FUNCTION FOR THIS PROBLEM
@@ -22,6 +30,14 @@ def opt_obj(UEFC, AR, S):
     N_lowerBound   = 1.0001
     N_upperBound   = 5.0
 
+    taper_initialGuess = 0.7
+    taper_lowerBound = 0.4
+    taper_upperBound = 1
+
+    tau_initialGuess = 0.1
+    tau_lowerBound = 0.08
+    tau_upperBound = 0.12
+
     # R_initialGuess = 6.0
     # R_lowerBound   = 0.1
     # R_upperBound   = 12.5
@@ -30,8 +46,10 @@ def opt_obj(UEFC, AR, S):
     # mpay_lowerBound   = 0.01
     # mpay_upperBound   = 1000.
 
-    initialGuess = N_initialGuess
-    bounds       = ((N_lowerBound,    N_upperBound),)
+    initialGuess = [N_initialGuess,taper_initialGuess,tau_initialGuess]
+    bounds       = ((N_lowerBound,    N_upperBound),
+                    (taper_lowerBound,taper_upperBound),
+                    (tau_lowerBound,tau_upperBound))
 
     # Constraint format is different, depending on algorithm.
     method = "SLSQP"

@@ -5,7 +5,11 @@ def GetCL(UEFC, opt_vars, AR, S):
 
     # Calculate the lift coefficient from UEFC parameters and opt_vars, AR, S
     rho = UEFC.rho
-    N   = opt_vars[0]
+    N = opt_vars[0]
+    taper = opt_vars[1]
+    tau = opt_vars[2]
+    UEFC.taper = taper
+    UEFC.tau = tau
 
     V  = UEFC.flight_velocity(opt_vars, AR, S)
     W  = UEFC.weight(opt_vars, AR, S)["Total"]
