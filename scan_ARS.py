@@ -158,32 +158,61 @@ if __name__ == "__main__":
     # Simple test case. Feel free to modify this part of the file.
     aircraft = UEFC()
 
-    b = 1.5       # wing span (m)
-    cr = 0.2      # Root chord (m)
-    ct = 0.1      # Tip chord (m)
-
-    S = (ct + cr) /2 * b
-    AR = b**2 / S
 
     # Payload weight
     aircraft.mpay_g   = 300.0     # payload weight in grams
 
     # Geometry parameters
-    aircraft.taper    = ct/cr   # taper ratio
     aircraft.dihedral = 10.0    # Wing dihedral (degrees)
-    aircraft.tau      = 0.12    # thickness-to-chord ratio
 
     # Aerodynamic parameters
     aircraft.CLdes    = 0.75    # maximum CL wing will be designed to fly at (in cruise)
     aircraft.e0       = 1.0     # Span efficiency for straight level flight
 
     # Wing bending and material properties
-    aircraft.dbmax    = 0.1     # tip displacement bending constraint
+    aircraft.dbmax    = 0.05     # tip displacement bending constraint
     aircraft.rhofoam  = 32.     # kg/m^3. high load foam
     aircraft.Efoam    = 19.3E6  # Pa.     high load foam
 
     num_division = 41
-    scan_ARS(aircraft, 3, 7, 0.3, 0.5, num_division, show_plots=True)
+
+    best_V = np.nan
+    best_lam = np.nan
+    best_tau = np.nan
+
+    S_min = 0.3
+    S_max = 0.5
+
+    AR_min = 3
+    AR_max = 7
+
+    Tau = np.linspace(0.08,0.12,10)
+    Lam = np.linspace(0.4,1,10)
+
+    for taui in Tau:
+        for lami in Lam: 
+            aircraft.taper = lami
+            aircraft.tau = taui
+            Vi,ARi,Si = scan_ARS(aircraft, AR_min, AR_max, S_min, S_max, num_division, show_plots=False)
+            #Change to Vi < best_V for the second bit
+            if Vi > best_V or best_V == np.nan:
+                best_V = Vi
+                best_lam = lami
+                best_tau = taui
+    
+    print(f"Best lambda: {best_lam}")
+    print(f"Best tau: {best_tau}")
+
+    aircraft.taper = best_lam
+    aircraft.tau = best_tau
+
+    print("Now plotting ...")
+    scan_ARS(aircraft, AR_min, AR_max, S_min, S_max, num_division, show_plots=True)
+
+
+
+
+
 
 
 
