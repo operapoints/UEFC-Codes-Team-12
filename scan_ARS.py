@@ -180,14 +180,19 @@ if __name__ == "__main__":
     best_lam = np.nan
     best_tau = np.nan
 
+    
+    worst_V = np.nan
+    worst_lam = np.nan
+    worst_tau = np.nan
+
     S_min = 0.1
     S_max = 0.6
 
     AR_min = 3
     AR_max = 12
 
-    Tau = np.linspace(0.08,0.12,3)
-    Lam = np.linspace(0.4,1,3)
+    Tau = np.linspace(0.08,0.12,16)
+    Lam = np.linspace(0.4,1,16)
 
     for taui in Tau:
         for lami in Lam: 
@@ -200,6 +205,11 @@ if __name__ == "__main__":
                 best_V = Vi
                 best_lam = lami
                 best_tau = taui
+            
+            if Vi < worst_V or np.isnan(worst_V):
+                worst_V = Vi
+                worst_lam = lami
+                worst_tau = taui 
     
     print(f"Best lambda: {best_lam}")
     print(f"Best tau: {best_tau}")
@@ -209,6 +219,17 @@ if __name__ == "__main__":
 
     print("Now plotting ...")
     scan_ARS(aircraft, AR_min, AR_max, S_min, S_max, num_division, show_plots=True)
+
+
+    print(f"worst lambda: {worst_lam}")
+    print(f"worst tau: {worst_tau}")
+
+    aircraft.taper = worst_lam
+    aircraft.tau = worst_tau
+
+    print("Now plotting ...")
+    scan_ARS(aircraft, AR_min, AR_max, S_min, S_max, num_division, show_plots=True)
+
 
 
 
