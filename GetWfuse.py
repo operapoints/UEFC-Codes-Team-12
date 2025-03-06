@@ -12,7 +12,7 @@ def GetWfuse(UEFC, AR, S):
     mfusel = .060  # span (length) dependent mass (kg)
     mfuseS = .026  # wing area dependent mass (kg)
 
-    SPV = 1.225   # Wing area for which mfusel and mfuseS were calculated (m^2)
+    SPV = 0.225   # Wing area for which mfusel and mfuseS were calculated (m^2)
     bPV = 1.5    # Wingspan for which mfusel and mfuseS were calculated (m)
 
     b = UEFC.wing_dimensions(AR, S)["Span"]
