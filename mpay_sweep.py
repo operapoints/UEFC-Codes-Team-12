@@ -142,7 +142,7 @@ if __name__ == "__main__":
     aircraft.rhofoam = 32.     # kg/m^3. high load foam
     aircraft.Efoam   = 19.3E6  # Pa.     high load foam
 
-
+    aircraft.dbmax = .075
     mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
                                                         AR, S,
                                                         mpay_start=mpay_start,
