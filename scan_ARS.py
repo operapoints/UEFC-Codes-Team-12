@@ -180,22 +180,23 @@ if __name__ == "__main__":
     best_lam = np.nan
     best_tau = np.nan
 
-    S_min = 0.3
-    S_max = 0.5
+    S_min = 0.1
+    S_max = 0.6
 
     AR_min = 3
-    AR_max = 7
+    AR_max = 12
 
-    Tau = np.linspace(0.08,0.12,10)
-    Lam = np.linspace(0.4,1,10)
+    Tau = np.linspace(0.08,0.12,3)
+    Lam = np.linspace(0.4,1,3)
 
     for taui in Tau:
         for lami in Lam: 
+            print(f"Evaluating lam = {lami}, tau = {taui}")
             aircraft.taper = lami
             aircraft.tau = taui
             Vi,ARi,Si = scan_ARS(aircraft, AR_min, AR_max, S_min, S_max, num_division, show_plots=False)
             #Change to Vi < best_V for the second bit
-            if Vi > best_V or best_V == np.nan:
+            if Vi > best_V or np.isnan(best_V):
                 best_V = Vi
                 best_lam = lami
                 best_tau = taui
