@@ -87,3 +87,4 @@ tail_surfaces = (75., 20.)
 
 PV_Comp_Weight_list = [Motor_Prop_Housing, battery, servos, radio, landing_gear, fuselage_stick, pushrods_housing_wiring, wing, wing_mount, tail_surfaces]
 print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
+print(f"Xcg/c = {CalcXcg(PV_Comp_Weight_list)/c} cm")
