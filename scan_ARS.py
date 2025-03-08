@@ -170,11 +170,13 @@ if __name__ == "__main__":
     aircraft.e0       = 1.0     # Span efficiency for straight level flight
 
     # Wing bending and material properties
-    aircraft.dbmax    = 0.05     # tip displacement bending constraint
+    aircraft.dbmax    = 0.10     # tip displacement bending constraint
     aircraft.rhofoam  = 32.     # kg/m^3. high load foam
     aircraft.Efoam    = 19.3E6  # Pa.     high load foam
 
     num_division = 41
+
+
 
     best_V = np.nan
     best_lam = np.nan
@@ -191,8 +193,12 @@ if __name__ == "__main__":
     AR_min = 3
     AR_max = 12
 
-    Tau = np.linspace(0.08,0.12,16)
-    Lam = np.linspace(0.4,1,16)
+
+    
+    # scan_ARS(aircraft,AR_min,AR_max,S_min,S_max,num_division, show_plots=True)
+
+    Tau = np.linspace(0.08,0.12,2)
+    Lam = np.linspace(0.4,1,2)
 
     for taui in Tau:
         for lami in Lam: 
