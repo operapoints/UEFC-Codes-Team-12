@@ -28,7 +28,7 @@ CMw_nom = -0.15
 # V_h = (S_h * l_h)/(S*c)
 
 ## Calculate Xcg/c ##
-def CalcXcg_c( CMw_nom, CLw_nom):
+def CalcXcg_c_nom( CMw_nom, CLw_nom):
     CM = CMw_nom
     CL = CLw_nom
 
@@ -66,7 +66,7 @@ def CalcXcg(Comp_Weight_list):
     COM = COM_track/weight_sum
     return COM
 
-Xcg = CalcXcg_c(CMw_nom, CLw_nom)
+Xcg = CalcXcg_c_nom(CMw_nom, CLw_nom)
 print(f"Xcg/c = {Xcg}")
 print("##################")
 
