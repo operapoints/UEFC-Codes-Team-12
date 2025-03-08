@@ -66,8 +66,19 @@ def CalcXcg(Comp_Weight_list):
     COM = COM_track/weight_sum
     return COM
 
-Xcg = CalcXcg_c_nom(CMw_nom, CLw_nom)
-print(f"Xcg/c = {Xcg}")
+def Find_nom_payload_x(Comp_Weight_list, Xcg_nom):
+    weight_sum = 0.
+    COM_track = 0.
+    for e in Comp_Weight_list:
+        COM_track += e[0]*e[1]
+        weight_sum += e[1]
+
+    m_pay = 300
+    x_pay = (Xcg_nom * (weight_sum + m_pay) - COM_track)/m_pay
+    return x_pay
+
+Xcg_nom = CalcXcg_c_nom(CMw_nom, CLw_nom)
+print(f"Xcg/c = {Xcg_nom}")
 print("##################")
 
 Xnp = CalcXnp_c(c, b, c_h, b_h, l_h)
@@ -87,4 +98,7 @@ tail_surfaces = (75., 20.)
 
 PV_Comp_Weight_list = [Motor_Prop_Housing, battery, servos, radio, landing_gear, fuselage_stick, pushrods_housing_wiring, wing, wing_mount, tail_surfaces]
 print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
-print(f"Xcg/c = {CalcXcg(PV_Comp_Weight_list)/c} cm")
+print(f"Xcg/c = {CalcXcg(PV_Comp_Weight_list)/c}")
+print("##################")
+x_pay_nom = Find_nom_payload_x(PV_Comp_Weight_list, Xcg_nom)
+print(f"Payload location for nominal Xcg = {x_pay_nom} cm")
