@@ -12,15 +12,19 @@ l_h = 0.65 # units: m
 CLw_nom = 0.65
 CMw_nom = -0.15
 
+# Planform Area:
 # S = c*b
 # S_h = c_h*b_h
 
+# Aspect Ratio:
 # AR = b**2/S
 # AR_h = b_h**2/S_h
 
+# AoA slope:
 # a_h = (2*np.pi)/(1 + (2/AR_h))
 # a_w = (2*np.pi)/(1 + (2/AR))
 
+# Tail Volume Coefficient:
 # V_h = (S_h * l_h)/(S*c)
 
 ## Calculate Xcg/c ##
