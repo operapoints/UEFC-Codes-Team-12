@@ -52,9 +52,38 @@ def CalcXnp_c(c , b , c_h, b_h , l_h):
 
     return Xnp_c
 
+## Calc Xcg From Weight + Locations of Components ##
+def CalcXcg(Comp_Weight_list):
+    ## Units are in cm and grams
+    ## Elements in Comp_Weight_list are given as location, weight
+
+    weight_sum = 0.
+    COM_track = 0.
+    for e in Comp_Weight_list:
+        COM_track += e[0]*e[1]
+        weight_sum += e[1]
+
+    COM = COM_track/weight_sum
+    return COM
+
 Xcg = CalcXcg_c(CMw_nom, CLw_nom)
 print(f"Xcg/c = {Xcg}")
 print("##################")
 
 Xnp = CalcXnp_c(c, b, c_h, b_h, l_h)
 print(f"Xnp/c = {Xnp}")
+print("##################")
+
+Motor_Prop_Housing = (-16., 75.)
+battery = (5.,75.)
+servos = (20., 15.)
+radio = (0., 8.)
+landing_gear = (-13. , 12.)
+fuselage_stick = (28., 36.)
+pushrods_housing_wiring = (45., 24.)
+wing = (3., 90.)
+wing_mount = (7., 25.)
+tail_surfaces = (75., 20.)
+
+PV_Comp_Weight_list = [Motor_Prop_Housing, battery, servos, radio, landing_gear, fuselage_stick, pushrods_housing_wiring, wing, wing_mount, tail_surfaces]
+print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
