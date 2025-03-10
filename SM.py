@@ -27,7 +27,7 @@ CMw_nom = -0.15
 # Tail Volume Coefficient:
 # V_h = (S_h * l_h)/(S*c)
 
-## Calculate Xcg/c ##
+## Calculate Xcg/c: SM.1/.2 ##
 def CalcXcg_c_nom( CMw_nom, CLw_nom):
     CM = CMw_nom
     CL = CLw_nom
@@ -35,7 +35,7 @@ def CalcXcg_c_nom( CMw_nom, CLw_nom):
     Xcg_c = 1/4 - (CM/CL)
     return Xcg_c
 
-## Calculate X_np/c ##
+## Calculate X_np/c SM.3/4##
 def CalcXnp_c(c , b , c_h, b_h , l_h):
 
     S = c * b
@@ -52,7 +52,13 @@ def CalcXnp_c(c , b , c_h, b_h , l_h):
 
     return Xnp_c
 
-## Calc Xcg From Weight + Locations of Components ##
+## Return Values for Alpha with respect to the Alpha trim (SM.5) ##
+
+def Alpha(alpha_e_trim, c, b, c_h, b_h, l_h):
+    ''' Calculating alpha in terms of alpha_e_trim'''
+
+
+## Calc Xcg From Weight + Locations of Components SM.6 ##
 def CalcXcg(Comp_Weight_list):
     ## Units are in cm and grams
     ## Elements in Comp_Weight_list are given as location, weight
