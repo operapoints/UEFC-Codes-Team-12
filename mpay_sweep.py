@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # Payload
     mpay_start = 0.0  # g
     mpay_end   = 300. # g
-    mpay_num   = 25
+    mpay_num   = 50
 
     aircraft = UEFC()
     # Geometry parameters
@@ -143,7 +143,22 @@ if __name__ == "__main__":
     aircraft.Efoam   = 19.3E6  # Pa.     high load foam
 
     aircraft.dbmax = .075
-    mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
+    db_max_list = [.5, .75, .1]
+
+    for e in db_max_list:
+        aircraft.dbmax = e
+        mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
+                                                        AR, S,
+                                                        mpay_start=mpay_start,
+                                                        mpay_end=mpay_end,
+                                                        mpay_num=mpay_num,
+                                                        show_plot=True)
+
+    tau_list = [.1, .11, .12]
+
+    for e in tau_list:
+        aircraft.dbmax = e
+        mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
                                                         AR, S,
                                                         mpay_start=mpay_start,
                                                         mpay_end=mpay_end,
