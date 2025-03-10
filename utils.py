@@ -18,7 +18,7 @@ def plot_series(independent_var, dependent_vars, filename=None):
     x_label, x_values = list(independent_var.items())[0]  # Extract the single independent variable
     
     num_lines = len(dependent_vars)
-    inferno_colors = cm.inferno(np.linspace(0, 1, num_lines))  # Generate colors from inferno colormap
+    inferno_colors = cm.viridis(np.linspace(0, 1, num_lines))  # Generate colors from inferno colormap
     
     fig, ax = plt.subplots()
     

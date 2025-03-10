@@ -96,25 +96,41 @@ def Find_nom_payload_x(Comp_Weight_list, Xcg_nom):
 def calc_alpha(alpha_e):
     return -alpha_e/(((l_h*a_w)/(a_e*V_h*c))+(a_h/a_e))
 
+def calc_CLw(alpha_e):
+    alpha = calc_alpha(alpha_e)
+    return CLw_nom+a_w*alpha
+    
+def calc_CLh(alpha_e):
+    alpha = calc_alpha(alpha_e)
+    return a_h*alpha+a_e*alpha_e
+
+
+
+# Xcg_nom = CalcXcg_c_nom(CMw_nom, CLw_nom)
+# print(f"Xcg/c = {Xcg_nom}")
+# print("##################")
+
+# Xnp = CalcXnp_c(c, b, c_h, b_h, l_h)
+# print(f"Xnp/c = {Xnp}")
+# print("##################")
+
+# print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
+# print(f"Xcg/c = {CalcXcg(PV_Comp_Weight_list)/c}")
+# print("##################")
+# x_pay_nom = Find_nom_payload_x(PV_Comp_Weight_list, Xcg_nom)
+# print(f"Payload location for nominal Xcg = {x_pay_nom} cm")
+
+
 vec_alpha_e = np.linspace(-10*(np.pi/180), 10*(np.pi/180), 256)
 vec_alpha = np.array([calc_alpha(x) for x in vec_alpha_e])
+vec_CLw = np.array([calc_CLw(x) for x in vec_alpha_e])
 
-Xcg_nom = CalcXcg_c_nom(CMw_nom, CLw_nom)
-print(f"Xcg/c = {Xcg_nom}")
-print("##################")
+vec_CLh = np.array([calc_CLh(x) for x in vec_alpha_e])
 
-Xnp = CalcXnp_c(c, b, c_h, b_h, l_h)
-print(f"Xnp/c = {Xnp}")
-print("##################")
+# print(vec_alpha[255],vec_alpha_e[255])
+# plot_series({'alpha_e':vec_alpha_e},{'alpha':vec_alpha},'SM5b.svg')
 
-print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
-print(f"Xcg/c = {CalcXcg(PV_Comp_Weight_list)/c}")
-print("##################")
-x_pay_nom = Find_nom_payload_x(PV_Comp_Weight_list, Xcg_nom)
-print(f"Payload location for nominal Xcg = {x_pay_nom} cm")
-
-print(vec_alpha[255],vec_alpha_e[255])
-plot_series({'alpha_e':vec_alpha_e},{'alpha':vec_alpha},'SM5a.svg')
+plot_series({'alpha_e':vec_alpha_e},{'CLw':vec_CLw,'CLh':vec_CLh},'SM5c.svg')
 
 
 
