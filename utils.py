@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 
-def plot_series(dependent_vars, independent_var, filename=None):
+def plot_series(independent_var, dependent_vars, filename=None):
     """
     Plots multiple dependent variables against a single independent variable.
     
