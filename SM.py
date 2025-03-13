@@ -99,10 +99,15 @@ def calc_alpha(alpha_e):
 def calc_CLw(alpha_e):
     alpha = calc_alpha(alpha_e)
     return CLw_nom+a_w*alpha
-    
+
 def calc_CLh(alpha_e):
     alpha = calc_alpha(alpha_e)
     return a_h*alpha+a_e*alpha_e
+
+def calc_xcg_from_alpha_e(alpha_e):
+    CLw = calc_CLw(alpha_e)
+    CLh = calc_CLh(alpha_e)
+    return (S*CLw*(c/4)+S_h*CLh*l_h)/(S*CLw+S_h*CLh)
 
 
 
@@ -127,10 +132,12 @@ vec_CLw = np.array([calc_CLw(x) for x in vec_alpha_e])
 
 vec_CLh = np.array([calc_CLh(x) for x in vec_alpha_e])
 
+vec_xcg = np.array([calc_xcg_from_alpha_e(x) for x in vec_alpha_e])
+
 # print(vec_alpha[255],vec_alpha_e[255])
 # plot_series({'alpha_e':vec_alpha_e},{'alpha':vec_alpha},'SM5b.svg')
 
-plot_series({'alpha_e':vec_alpha_e},{'CLw':vec_CLw,'CLh':vec_CLh},'SM5c.svg')
+plot_series({'alpha_e':vec_alpha_e},{'xcg':vec_xcg},'SM5d.svg')
 
 
 
