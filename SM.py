@@ -25,6 +25,7 @@ wing_mount = (7., 25.)
 tail_surfaces = (75., 20.)
 
 PV_Comp_Weight_list = [Motor_Prop_Housing, battery, servos, radio, landing_gear, fuselage_stick, pushrods_housing_wiring, wing, wing_mount, tail_surfaces]
+PV_Comp_Weight_list = [(x[0]*0.01,x[1]) for x in PV_Comp_Weight_list]
 # Planform Area:
 S = c*b
 S_h = c_h*b_h
@@ -90,7 +91,7 @@ def Find_nom_payload_x(Comp_Weight_list, Xcg_nom):
         weight_sum += e[1]
 
     m_pay = 300
-    x_pay = (Xcg_nom * (weight_sum + m_pay) - COM_track)/m_pay
+    x_pay = (Xcg_nom*(weight_sum+m_pay)-COM_track)/m_pay
     return x_pay
 
 def calc_alpha(alpha_e):
@@ -126,18 +127,35 @@ def calc_xcg_from_alpha_e(alpha_e):
 # print(f"Payload location for nominal Xcg = {x_pay_nom} cm")
 
 
-vec_alpha_e = np.linspace(-10*(np.pi/180), 10*(np.pi/180), 256)
+vec_alpha_e = np.linspace(-40*(np.pi/180), 40*(np.pi/180), 256)
+vec_alpha_e_deg = np.linspace(-40,40,256)
 vec_alpha = np.array([calc_alpha(x) for x in vec_alpha_e])
+vec_alpha_deg = (180/np.pi)*vec_alpha
 vec_CLw = np.array([calc_CLw(x) for x in vec_alpha_e])
 
 vec_CLh = np.array([calc_CLh(x) for x in vec_alpha_e])
 
 vec_xcg = np.array([calc_xcg_from_alpha_e(x) for x in vec_alpha_e])
 
-# print(vec_alpha[255],vec_alpha_e[255])
-# plot_series({'alpha_e':vec_alpha_e},{'alpha':vec_alpha},'SM5b.svg')
+Xcg_unloaded = CalcXcg(PV_Comp_Weight_list)
+print(f"Xcg_unloaded: {Xcg_unloaded}")
+print(f"Xcg_unloaded/c: {Xcg_unloaded/c}")
+x_pay_nom = Find_nom_payload_x(PV_Comp_Weight_list,c/4)
+print(f"x_pay_nom: {x_pay_nom}")
 
-plot_series({'alpha_e':vec_alpha_e},{'xcg':vec_xcg},'SM5d.svg')
+print(f"x_pay_nom/c: {x_pay_nom/c}")
+print(f"x_np/c: {CalcXnp_c(c , b , c_h, b_h , l_h)}")
+
+# print(vec_alpha[255],vec_alpha_e[255])
+# plot_series({'alpha_e':vec_alpha_e_deg},{'alpha':vec_alpha_deg},'SM5b.svg')
+#plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh*(S_h/S)},'SM5b.svg')
+
+#plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg},'SM5d.svg')
+
+#plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xcg/c':(-np.array([c/4 for i in range(256)]) + vec_xcg)/c},'SM8a.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xpay':np.array([Find_nom_payload_x(PV_Comp_Weight_list,calc_xcg_from_alpha_e(alpha_e)) for alpha_e in vec_alpha_e])/c,
+                                        'SM': (-1*vec_xcg/c)+CalcXnp_c(c , b , c_h, b_h , l_h)},'SM9.svg')
+
 
 
 
