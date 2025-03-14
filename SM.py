@@ -38,7 +38,7 @@ AR_h = b_h**2/S_h
 a_h = (2*np.pi)/(1 + (2/AR_h))
 a_w = (2*np.pi)/(1 + (2/AR))
 fancy_e = np.acos(1-2*f_e)
-a_e = 2*(np.pi - fancy_e +np.sin(fancy_e))/(1/(2/AR_h))
+a_e = 2*(np.pi - fancy_e +np.sin(fancy_e))/(1+(2/AR_h))
 
 # Tail Volume Coefficient:
 V_h = (S_h * l_h)/(S*c)
@@ -54,22 +54,6 @@ def CalcXcg_c_nom( CMw_nom, CLw_nom):
     Xcg_c = 1/4 - (CM/CL)
     return Xcg_c
 
-## Calculate X_np/c SM.3/4##
-def CalcXnp_c(c , b , c_h, b_h , l_h):
-
-    S = c * b
-    S_h = c_h * b_h
-
-    AR = (b**2)/S
-    AR_h = (b_h**2)/S_h
-
-    a_h = (2*np.pi)/(1 + (2/AR_h))
-    a_w = (2*np.pi)/(1 + (2/AR))
-
-    V_h = (S_h * l_h)/(S*c)
-    Xnp_c = ((1/4)*(a_w/a_h) + V_h*(1 + c/(4*l_h)))/((a_w/a_h) + V_h*(c/l_h))
-
-    return Xnp_c
 
 
 ## Calc Xcg From Weight + Locations of Components SM.6 ##
@@ -111,15 +95,14 @@ def calc_CLh(alpha_e):
 def calc_xcg_from_alpha_e(alpha_e):
     CLw = calc_CLw(alpha_e)
     CLh = calc_CLh(alpha_e)
-    return (S*CLw*(Xcg_nom)+S_h*CLh*l_h)/(S*CLw+S_h*CLh)
+    return (S*CLw*(c/4)-S*c*CMw_nom+l_h*S_h*CLh)/(S*CLw+S_h*CLh)
+    #return (S*CLw*Xcg_nom+S_h*CLh*l_h)/(S*CLw+S_h*CLh)
 
 
 
 print(f"Xcg/c = {Xcg_nom/c}")
 # print("##################")
-
-# X_np = CalcXnp_c(c, b, c_h, b_h, l_h)
-# print(f"X_np/c = {X_np}")
+# print(f"X_np/c = {X_np/c}")
 # print("##################")
 
 # print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
@@ -147,12 +130,13 @@ x_pay_nom = Find_nom_payload_x(PV_Comp_Weight_list,Xcg_nom)
 print(f"x_pay_nom: {x_pay_nom}")
 
 print(f"x_pay_nom/c: {x_pay_nom/c}")
-print(f"x_np/c: {CalcXnp_c(c , b , c_h, b_h , l_h)}")
 print(f"x_np/c: {X_np/c}")
+print(f"x_np/c: {(V_h+0.25*(a_w/a_h))/((a_w/a_h)+V_h*(c/l_h))}")
 
-# print(vec_alpha[255],vec_alpha_e[255])
+
+print(vec_alpha[255],vec_alpha_e[255])
 plot_series({'alpha_e':vec_alpha_e_deg},{'alpha':vec_alpha_deg},'SM5b.svg')
-plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh*(S_h/S)},'SM5c.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh},'SM5c.svg')
 
 plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg},'SM5d.svg')
 
@@ -163,4 +147,6 @@ plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xpay/c':(-x_pay_nom + vec_xpay)/
 
 
 
-
+# print(f"A_w: {a_w}, a_h: {a_h}, a_e: {a_e}")
+# print(f"V_h: {V_h}")
+# print(calc_alpha(1))
