@@ -44,6 +44,7 @@ a_e = 2*(np.pi - fancy_e +np.sin(fancy_e))/(1/(2/AR_h))
 V_h = (S_h * l_h)/(S*c)
 
 Xcg_nom = c*(1/4 - (CMw_nom/CLw_nom))
+X_np = (S_h*a_h*l_h+S*a_w*c*0.25)/(S*a_w+S_h*a_h)
 
 ## Calculate Xcg/c: SM.1/.2 ##
 def CalcXcg_c_nom( CMw_nom, CLw_nom):
@@ -118,8 +119,8 @@ def calc_xcg_from_alpha_e(alpha_e):
 # print(f"Xcg/c = {Xcg_nom}")
 # print("##################")
 
-# Xnp = CalcXnp_c(c, b, c_h, b_h, l_h)
-# print(f"Xnp/c = {Xnp}")
+# X_np = CalcXnp_c(c, b, c_h, b_h, l_h)
+# print(f"X_np/c = {X_np}")
 # print("##################")
 
 # print(f"Xcg from components = {CalcXcg(PV_Comp_Weight_list)} cm")
@@ -148,17 +149,18 @@ print(f"x_pay_nom: {x_pay_nom}")
 
 print(f"x_pay_nom/c: {x_pay_nom/c}")
 print(f"x_np/c: {CalcXnp_c(c , b , c_h, b_h , l_h)}")
+print(f"x_np/c: {X_np/c}")
 
 # print(vec_alpha[255],vec_alpha_e[255])
-# plot_series({'alpha_e':vec_alpha_e_deg},{'alpha':vec_alpha_deg},'SM5b.svg')
-#plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh*(S_h/S)},'SM5b.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'alpha':vec_alpha_deg},'SM5b.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh*(S_h/S)},'SM5c.svg')
 
-#plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg},'SM5d.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg},'SM5d.svg')
 
 plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xcg/c':(-Xcg_nom + vec_xcg)/c,
                                          'delta_xpay/c':(-x_pay_nom + vec_xpay)/c},'SM8.svg')
-#plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xpay/c':np.array([Find_nom_payload_x(PV_Comp_Weight_list,calc_xcg_from_alpha_e(alpha_e)) for alpha_e in vec_alpha_e])/c,
-#                                        'SM': (-1*vec_xcg/c)+CalcXnp_c(c , b , c_h, b_h , l_h)},'SM9.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xpay/c':(-x_pay_nom + vec_xpay)/c,
+                                        'SM': (-1*vec_xcg/c)+X_np/c},'SM9.svg')
 
 
 
