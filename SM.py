@@ -115,8 +115,7 @@ def calc_xcg_from_alpha_e(alpha_e):
 
 
 
-# Xcg_nom = CalcXcg_c_nom(CMw_nom, CLw_nom)
-# print(f"Xcg/c = {Xcg_nom}")
+print(f"Xcg/c = {Xcg_nom/c}")
 # print("##################")
 
 # X_np = CalcXnp_c(c, b, c_h, b_h, l_h)
