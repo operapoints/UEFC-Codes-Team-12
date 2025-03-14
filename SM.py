@@ -44,7 +44,7 @@ a_e = 2*(np.pi - fancy_e +np.sin(fancy_e))/(1+(2/AR_h))
 V_h = (S_h * l_h)/(S*c)
 
 Xcg_nom = c*(1/4 - (CMw_nom/CLw_nom))
-X_np = (S_h*a_h*l_h+S*a_w*c*0.25)/(S*a_w+S_h*a_h)
+X_np = (S_h*a_h*l_h+S*a_w*(c/4)+S_h*a_h*(c/4))/(S*a_w+S_h*a_h)
 
 ## Calculate Xcg/c: SM.1/.2 ##
 def CalcXcg_c_nom( CMw_nom, CLw_nom):
@@ -95,7 +95,7 @@ def calc_CLh(alpha_e):
 def calc_xcg_from_alpha_e(alpha_e):
     CLw = calc_CLw(alpha_e)
     CLh = calc_CLh(alpha_e)
-    return (S*CLw*(c/4)-S*c*CMw_nom+l_h*S_h*CLh)/(S*CLw+S_h*CLh)
+    return (S*CLw*(c/4)-S*c*CMw_nom+(c/4+l_h)*S_h*CLh)/(S*CLw+S_h*CLh)
     #return (S*CLw*Xcg_nom+S_h*CLh*l_h)/(S*CLw+S_h*CLh)
 
 
@@ -131,14 +131,13 @@ print(f"x_pay_nom: {x_pay_nom}")
 
 print(f"x_pay_nom/c: {x_pay_nom/c}")
 print(f"x_np/c: {X_np/c}")
-print(f"x_np/c: {(V_h+0.25*(a_w/a_h))/((a_w/a_h)+V_h*(c/l_h))}")
 
 
 print(vec_alpha[255],vec_alpha_e[255])
 plot_series({'alpha_e':vec_alpha_e_deg},{'alpha':vec_alpha_deg},'SM5b.svg')
 plot_series({'alpha_e':vec_alpha_e_deg},{'CLw':vec_CLw,'CLh*(S_h/S)':vec_CLh},'SM5c.svg')
 
-plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg},'SM5d.svg')
+plot_series({'alpha_e':vec_alpha_e_deg},{'xcg':vec_xcg/c},'SM5d.svg')
 
 plot_series({'alpha_e':vec_alpha_e_deg},{'delta_xcg/c':(-Xcg_nom + vec_xcg)/c,
                                          'delta_xpay/c':(-x_pay_nom + vec_xpay)/c},'SM8.svg')
