@@ -143,7 +143,7 @@ if __name__ == "__main__":
     aircraft.Efoam   = 19.3E6  # Pa.     high load foam
 
     aircraft.dbmax = .075
-    db_max_list = [.5, .75, .1]
+    db_max_list = [.05, .075, .1]
 
     for e in db_max_list:
         aircraft.dbmax = e
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     tau_list = [.1, .11, .12]
 
     for e in tau_list:
-        aircraft.dbmax = e
+        aircraft.tau = e
         mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
                                                         AR, S,
                                                         mpay_start=mpay_start,
