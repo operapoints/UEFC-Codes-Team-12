@@ -116,9 +116,9 @@ def mpay_sweep(aircraft: UEFC,
 
 if __name__ == "__main__":
     # you made need to change this!
-    cr = 0.7
+    cr = 0.2
     ct = 0.1
-    b = 1.2
+    b = 1.5
     S = (cr + ct)/2 * b
     AR = b**2 / S
 
@@ -145,22 +145,121 @@ if __name__ == "__main__":
     aircraft.dbmax = .075
     db_max_list = [.05, .075, .1]
 
-    for e in db_max_list:
-        aircraft.dbmax = e
+    fig, ax = plt.subplots(3, 2, figsize=(9, 9))
+
+    tab10_colors = cm.tab10.colors
+    markers = ['x', '*', '.', '+', "^"]
+    colors = ["red", "blue", "green"]
+
+    for i in range(0,3):
+        aircraft.dbmax = db_max_list[i]
         mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
                                                         AR, S,
                                                         mpay_start=mpay_start,
                                                         mpay_end=mpay_end,
                                                         mpay_num=mpay_num,
-                                                        show_plot=True)
+                                                        show_plot=False)
 
+        ax[0,0].plot(mpay, obj, marker=markers[0], color=colors[i], label = f"db_max = {db_max_list[i]}")
+        ax[0,0].grid(True)
+        #ax[0,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[0,0].set_ylabel(f"Velocity $V$ [m/s]")
+        fig.legend()
+
+        # Wing tip deflection
+        ax[0,1].plot(mpay, db, marker=markers[4], color=colors[i] )
+        ax[0,1].grid(True)
+        #ax[0,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[0,1].set_ylabel(f"Tip bending $\\delta/b$")
+
+        # Lift coefficient
+        ax[1,0].plot(mpay, CL, marker=markers[1], color=colors[i] )
+        ax[1,0].grid(True)
+        #ax[1,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[1,0].set_ylabel(f"Lift coefficient $C_L$")
+
+        # Drag coefficient
+        ax[1,1].plot(mpay, CD, marker=markers[1], color=colors[i] )
+        ax[1,1].grid(True)
+        #ax[1,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[1,1].set_ylabel(f"Drag coefficient $C_D$")
+
+        # Thrust
+        ax[2,0].plot(mpay, T_max, color=colors[i], marker=markers[2], label="Thrust Max", linestyle="solid")
+        ax[2,0].plot(mpay, T_req, color=colors[i], marker=markers[3], label="Thrust Required", linestyle="dotted")
+        # ax[2,0].legend()
+        ax[2,0].grid(True)
+        ax[2,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[2,0].set_ylabel(f"Thrust [N]")
+
+        # Load Factor
+        ax[2,1].plot(mpay, N, marker=markers[0], color=colors[i] )
+        ax[2,1].grid(True)
+        ax[2,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[2,1].set_ylabel(f"Load factor [-]")
+
+        suptitle = f"$AR = {AR:.1f}$, $S = {S:.3f}$ m$^2$, \n $C_{{L_{{\\mathrm{{des}}}}}} = {aircraft.CLdes:.2f}$, $\\lambda = {aircraft.taper:.2f}$, $\\tau = {aircraft.tau:.2f}$, $(\\delta/b)_{{\\mathrm{{max}}}} = {aircraft.dbmax:.2f}$"
+        fig.suptitle(suptitle)
+
+
+
+    plt.show()
+
+
+    aircraft.dbmax = .1
     tau_list = [.1, .11, .12]
 
-    for e in tau_list:
-        aircraft.tau = e
+
+    fig, ax = plt.subplots(3, 2, figsize=(9, 9))
+
+    for i in range(0,3):
+        aircraft.tau = tau_list[i]
         mpay, obj, CL, CD, T_req, T_max, db, N = mpay_sweep(aircraft,
                                                         AR, S,
                                                         mpay_start=mpay_start,
                                                         mpay_end=mpay_end,
                                                         mpay_num=mpay_num,
-                                                        show_plot=True)
+                                                        show_plot=False)
+
+        ax[0,0].plot(mpay, obj, marker=markers[0], color=colors[i], label = f"db_max = {tau_list[i]}")
+        ax[0,0].grid(True)
+        #ax[0,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[0,0].set_ylabel(f"Velocity $V$ [m/s]")
+        fig.legend()
+
+        # Wing tip deflection
+        ax[0,1].plot(mpay, db, marker=markers[4], color=colors[i] )
+        ax[0,1].grid(True)
+        #ax[0,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[0,1].set_ylabel(f"Tip bending $\\delta/b$")
+
+        # Lift coefficient
+        ax[1,0].plot(mpay, CL, marker=markers[1], color=colors[i] )
+        ax[1,0].grid(True)
+        #ax[1,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[1,0].set_ylabel(f"Lift coefficient $C_L$")
+
+        # Drag coefficient
+        ax[1,1].plot(mpay, CD, marker=markers[1], color=colors[i] )
+        ax[1,1].grid(True)
+        #ax[1,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[1,1].set_ylabel(f"Drag coefficient $C_D$")
+
+        # Thrust
+        ax[2,0].plot(mpay, T_max, color=colors[i], marker=markers[2], label="Thrust Max", linestyle="solid")
+        ax[2,0].plot(mpay, T_req, color=colors[i], marker=markers[3], label="Thrust Required", linestyle="dotted")
+        # ax[2,0].legend()
+        ax[2,0].grid(True)
+        ax[2,0].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[2,0].set_ylabel(f"Thrust [N]")
+
+        # Load Factor
+        ax[2,1].plot(mpay, N, marker=markers[0], color=colors[i] )
+        ax[2,1].grid(True)
+        ax[2,1].set_xlabel(f"Payload mass $m_{{\\mathrm{{pay}}}}$ [g]")
+        ax[2,1].set_ylabel(f"Load factor [-]")
+
+        suptitle = f"$AR = {AR:.1f}$, $S = {S:.3f}$ m$^2$, \n $C_{{L_{{\\mathrm{{des}}}}}} = {aircraft.CLdes:.2f}$, $\\lambda = {aircraft.taper:.2f}$, $\\tau = {aircraft.tau:.2f}$, $(\\delta/b)_{{\\mathrm{{max}}}} = {aircraft.dbmax:.2f}$"
+        fig.suptitle(suptitle)
+
+    plt.show()
