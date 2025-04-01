@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Main driver showing how to model Unified Engineering Flight Competition wings 
+Main driver showing how to model Unified Engineering Flight Competition wings
 using a vortex lattice method
 
 Author: David Darmofal, MIT
@@ -11,14 +11,14 @@ Date: April 2, 2021
 import UEFC_wing
 import matplotlib.pyplot as plt
 
-# Set-up a wing object. Inputs: wingspan, root chord, tip chord, root incidence 
+# Set-up a wing object. Inputs: wingspan, root chord, tip chord, root incidence
 # angle, tip incidence angle, dihedral angle.
-# Note: wing twist is defined as (agroot - agtip). Therefore, this wing has a 
+# Note: wing twist is defined as (agroot - agtip). Therefore, this wing has a
 # twist of +5 degrees, and the tip is at a lower incidence angle than the root.
 root_angle = 3.13
-washout_diff = -5.0
+washout_diff = -5.
 tip_angle = root_angle + washout_diff
-PV = UEFC_wing.UEFC_wing(b=1.5, croot=0.2, ctip=0.1, agroot=root_angle, agtip=tip_angle, dihedral=10.)
+PV = UEFC_wing.UEFC_wing(b=2, croot= .4, ctip=.05, agroot=root_angle, agtip=tip_angle, dihedral=10.)
 
 # Plot the wing geometry
 PV.plotgeom()
