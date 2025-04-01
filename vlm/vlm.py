@@ -18,7 +18,13 @@ import matplotlib.pyplot as plt
 root_angle = 3.13
 washout_diff = -5.
 tip_angle = root_angle + washout_diff
-PV = UEFC_wing.UEFC_wing(b=2, croot= .4, ctip=.05, agroot=root_angle, agtip=tip_angle, dihedral=10.)
+##################
+# Defining tip chord based on chosen taper ratio and root chord
+taper_ratio = .6
+croot = .5
+ctip = taper_ratio * croot
+##################
+PV = UEFC_wing.UEFC_wing(b=2, croot= .4, ctip= ctip , agroot=root_angle, agtip=tip_angle, dihedral=10.)
 
 # Plot the wing geometry
 PV.plotgeom()
