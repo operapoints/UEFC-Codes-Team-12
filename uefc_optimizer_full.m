@@ -28,7 +28,17 @@ end
 
 % This calculates the maximum prop thrust as a function of velocity
 function [T_max] = get_T_max(x)
-
+global m_pay rho g
+    ct0 = 0.2093;
+    ct1 = -0.2484;
+    ct2 = -0.1386;
+    Tmax_static = 2;              
+    Rprop       = 0.1016;       
+    Aprop       = np.pi*Rprop^2;
+    Omega  = np.sqrt(Tmax_static/(0.5*rho*Rprop^2*Aprop*ct0));
+    Lambda = V/(Omega*Rprop);
+    CT = ct0+ct1*Lambda+ct2*Lambda^2;
+    T_max = CT*0.5*rho*((Omega*Rprop)^2)*Aprop;
 end
 
 % Calculate the delta in cg position
