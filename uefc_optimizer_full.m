@@ -34,8 +34,67 @@ function [F_d] = get_F_d(x,v)
 
 end
 
-% Calculate aircraft     mass
+% Calculate total aircraft mass
 function [m_tot] = get_m_tot(x)
+global g
+
+    W_wing_tail_weight = get_wh(x);
+    W_fusl = get_wh(x);
+    W_pay = get_w_pay(x);
+
+    m_tot = (W_wing_tail_weight + W_pay + W_fusl)/g;
+
+end
+
+% Calculate wing and tail weight
+function [W_wing_tail_weight] = get_wh(x)
+global g rho_foam
+    Afac = 0.66;
+    b_w = x(1);
+    c_w = x(2);
+    lam_w = x(3);
+    tau_w = x(5);
+    AR_w = b_w/c_w;
+    S_w = b_w*c_w;
+    b_h = x(8);
+    c_h = x(9);
+    lam_h = x(10);
+    tau_h = x(12);
+    AR_h = b_h/c_h;
+    S_h = b_h*c_h;
+
+
+    Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
+    Wtail = (4/3)*Afac*rho_foam*g*tau_h*S_h^1.5*AR_h^(-0.5)*(lam_h^2+lam_h+1)/(lam_h+1)^2;
+    W_wing_tail_weight = Wwing + Wtail;
+
+end
+
+% Calculate the weight of the fuselage
+function [W_fusl] = get_fusl(x)
+global g
+    mfuse0 = .185;
+    mfusel = .060;
+    mfuseS = .026;
+    SPV = 0.225;
+    bPV = 1.5;
+
+    b_w = x(1);
+    c_w = x(2);
+    S_w = b_w*c_w;
+    b_h = x(8);
+    c_h = x(9);
+    S_h = b_w*c_w;
+
+
+    Wfuse = (mfuse0 + mfusel * ((b_w+b_h)/bPV) + mfuseS * ((S_w+S_h)/SPV))*g;
+
+end
+
+% Calculate Payload Weight
+function [W_pay] = get_w_pay(x)
+global m_pay g
+    W_pay = m_pay*g;
 
 end
 
@@ -45,8 +104,8 @@ global m_pay rho g
     ct0 = 0.2093;
     ct1 = -0.2484;
     ct2 = -0.1386;
-    Tmax_static = 2;              
-    Rprop       = 0.1016;       
+    Tmax_static = 2;
+    Rprop       = 0.1016;
     Aprop       = np.pi*Rprop^2;
     Omega  = np.sqrt(Tmax_static/(0.5*rho*Rprop^2*Aprop*ct0));
     Lambda = V/(Omega*Rprop);
@@ -78,7 +137,7 @@ end
 
 % We will likely use the ga optimizer.
 % Due to the way it works, we have to report the optimizer constaints as a
-% 1D vector in ceq. 
+% 1D vector in ceq.
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
 
@@ -89,4 +148,3 @@ end
 % Optimization bounds
 
 % Optimizer run parameters
-
