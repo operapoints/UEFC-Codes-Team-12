@@ -11,18 +11,7 @@ g = 9.8066;
 % The design is encoded as a (15,) array of design parameters:
 % b_w,
 % c_w,
-% tau_w,
-% lam_w,
-% Cl_w,
-% Ct_w,
-% Cw_w,
-% b_h,
-% c_h,
-% tau_h,
-% lam_h,
-% Cl_h,Ct_h,
-% Cw_h,
-% N
+% tau_w,b_w,c_w,lam_w,Cl_w,tau_w,Ct_w,Cw_w, b_h,c_h,lam_h,Cl_h,tau_h,Ct_h,Cw_h, N
 
 % Calculates velocity
 function [v] = get_v(x)
