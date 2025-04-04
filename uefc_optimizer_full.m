@@ -8,45 +8,31 @@ g = 9.8066;
 
 % Signatures can be worked out later
 
-% The design is encoded as a (15,) array of design parameters:
-% b_w,
-% c_w,
-% tau_w,
-% lam_w,
-% Cl_w,
-% Ct_w,
-% Cw_w,
-% b_h,
-% c_h,
-% tau_h,
-% lam_h,
-% Cl_h,Ct_h,
-% Cw_h,
-% N
+% The design is encoded as a (11,) array of design parameters:
+% 1 - b_w, 
+% 2 - c_w,
+% 3 - Cl_nom,
+% 4 - Cl_trim,
+% 5 - C_tw,
+% 6 - C_ww,
+% 7 - N,
+% 8 - b_h,
+% 9 - c_h,
+% 10 - Cl_hnom,
+% 11 - x_h
+
 
 % Calculates velocity
 function [v] = get_v(x)
 global m_pay rho g
     b_w = x(1);
     c_w = x(2);
-    tau_w = x(3);
-    lam_w = x(4);
-    tau_w = x(5);
-    Cl_w = x(6);
-    Ct_w = x(7);
-    Cw_w = x(8);
-    b_h = x(9);
-    c_h = x(10);
-    tau_h = x(11);
-    lam_h = x(12);
-    Cl_h = x(13);
-    Ct_h = x(14);
-    Cw_h = x(15);
-    N = x(16);
+    N =  x(7);
+    Cl_nom = x(3)
 
-    W = get_m_tot(x) * g
-    S = b_w*c_w
-    v = sqrt((N*W)/((1/2)*rho*Cl_w))
+    W = get_m_tot(x) * g;
+    S = b_w*c_w;
+    v = sqrt((N*W)/((1/2)*rho*Cl_nom));
 end
 
 % Calculates drag force
