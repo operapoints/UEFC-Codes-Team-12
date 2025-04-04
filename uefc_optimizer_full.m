@@ -26,7 +26,8 @@ g = 9.8066;
 
 % Calculates velocity
 function [v] = get_v(x)
-
+global m_pay rho g
+    
 end
 
 % Calculates drag force
@@ -120,6 +121,25 @@ end
 
 % Calculate tip deflection
 function [del_tip] = get_del_tip(x,m_tot)
+    b_w = x(1);
+    c_w = x(2);
+    lam_w = x(3);
+    tau_w = x(5);
+    AR_w = b_w/c_w;
+    S_w = b_w*c_w;
+    b_h = x(8);
+    c_h = x(9);
+    lam_h = x(10);
+    tau_h = x(12);
+    E = 3000000000;
+    Gamma =  @(y) 1+((lambda-1)/(lambda + 1))-(((2.*y)/(b/2)).*((lambda-1)/(lambda+1)));
+    I =@(y) (1/2).*Gamma(y).*((tau.*c_mean)^2).*s_w.*s_t;
+    Mx = @(y) (L_0/24).*(2.*b.^2.*sqrt(1-(4/b.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b.^2).*y.^2) - 3.*pi.*b.*y + 6.*b.*y.*asin(2.*y/b));
+    u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
+    u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
+    u = integral(u_prime, 0, b/2);
+    y = b/2
+    d_b = (eval(u)/b)
 
 end
 
