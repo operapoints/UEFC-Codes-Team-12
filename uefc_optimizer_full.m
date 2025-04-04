@@ -42,11 +42,11 @@ end
 
 % Calculate total aircraft mass
 function [m_tot] = get_m_tot(x)
-global g
+global g m_pay
 
     W_wing_tail_weight = get_wh(x);
-    W_fusl = get_wh(x);
-    W_pay = get_w_pay(x);
+    W_fusl = get_wfusl(x);
+    W_pay = m_pay*g;
 
     m_tot = (W_wing_tail_weight + W_pay + W_fusl)/g;
 
@@ -77,7 +77,7 @@ global g rho_foam
 end
 
 % Calculate the weight of the fuselage
-function [W_fusl] = get_fusl(x)
+function [W_fusl] = get_wfusl(x)
 global g
     mfuse0 = .185;
     mfusel = .060;
@@ -93,16 +93,10 @@ global g
     S_h = b_w*c_w;
 
 
-    Wfuse = (mfuse0 + mfusel * ((b_w+b_h)/bPV) + mfuseS * ((S_w+S_h)/SPV))*g;
+    W_fusl = (mfuse0 + mfusel * ((b_w+b_h)/bPV) + mfuseS * ((S_w+S_h)/SPV))*g;
 
 end
 
-% Calculate Payload Weight
-function [W_pay] = get_w_pay(x)
-global m_pay g
-    W_pay = m_pay*g;
-
-end
 
 % This calculates the maximum prop thrust as a function of velocity
 function [T_max] = get_T_max(x)
