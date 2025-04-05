@@ -268,5 +268,5 @@ c = [];
 end
 
 % Optimization bounds
-
+print = get_d_b([1,1,1,1,1,1,1,1,1,1,1,1])
 % Optimizer run parameters
