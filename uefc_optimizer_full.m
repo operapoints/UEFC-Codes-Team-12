@@ -98,7 +98,7 @@ global m_pay rho g
     b_w = x(1);
     c_w = x(2);
     N =  x(7);
-    Cl_nom = x(3)
+    Cl_nom = x(3);
 
     W = get_m_tot(x) * g;
     S = b_w*c_w;
@@ -209,9 +209,9 @@ global m_pay rho g
     Cw_h = x(15);
     N = x(16);
     
-    v = get_v(x)
-    A = b_w * c_w
-    L0 = (1/2)*Cl_w *(v^2)* rho * A
+    v = get_v(x);
+    A = b_w * c_w;
+    L_0 = (1/2)*Cl_w *(v^2)* rho * A;
 
     E = 3000000000;
     Gamma =  @(y) 1+((lam_w-1)/(lam_w + 1))-(((2.*y)/(b/2)).*((lam_w-1)/(lam_w+1)));
@@ -220,8 +220,8 @@ global m_pay rho g
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
     u = integral(u_prime, 0, b/2);
-    y = b/2
-    d_b = (eval(u)/b)
+    % y = b/2; Is this intentional? unused currently
+    d_b = (eval(u)/b);
 
 end
 
@@ -246,7 +246,7 @@ global m_pay rho g
     N = x(16);
 
     v = get_v(x)
-    r_turn = ((v^2)*sqrt((N^2) - 1))/g
+    r_turn = ((v^2)*sqrt((N^2) - 1))/g;;
 
 end
 
