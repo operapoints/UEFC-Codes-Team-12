@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g E min_SM C_mw max_elev_deflection
+global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps
 
 
 m_pay = 0.3;
@@ -9,23 +9,24 @@ g = 9.8066;
 min_SM = 0.05;
 C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
+rho_caps = 1000; % Find actual value for this
 
 
 % Signatures can be worked out later
 
 % The design is encoded as a (12,) array of design parameters:
-% 1 - b_w, 
-% 2 - c_w,
-% 3 - Cl_nom,
-% 4 - Cl_trim,
-% 5 - C_tw,
-% 6 - C_ww,
-% 7 - N,
-% 8 - b_h,
-% 9 - c_h,
-% 10 - Cl_hnom,
-% 11 - x_h,
-% 12 - SM_trim
+% 1 - b_w,      Main wing span
+% 2 - c_w,      Main wing mean chord
+% 3 - Cl_nom,   Main wing nominal lift coefficient
+% 4 - Cl_trim,  Main wing trim lift coefficient
+% 5 - C_tw,     Main wing cap thickness
+% 6 - C_ww,     Main wing cap width
+% 7 - N,        Nominal load factor
+% 8 - b_h,      Horizontal stab span
+% 9 - c_h,      Horizontal stab mean chord
+% 10 - Cl_hnom, Horizontal stab nominal lift coefficient
+% 11 - x_h,     Horizontal stab NP abscissa from main wing NP abscissa
+% 12 - SM_trim  Trim static margin
 
 %Calculate CG shift
 function[delta_x_pay] = get_delta_x_pay(x)
@@ -141,7 +142,8 @@ global g rho_foam
 
     Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
     Wtail = (4/3)*Afac*rho_foam*g*tau_h*S_h^1.5*AR_h^(-0.5)*(lam_h^2+lam_h+1)/(lam_h+1)^2;
-    W_wing_tail_weight = Wwing + Wtail;
+    W_caps = 2*C_tw*C_ww*b_w*rho_caps*g;
+    W_wing_tail_weight = Wwing + Wtail+W_caps;
 
 end
 
