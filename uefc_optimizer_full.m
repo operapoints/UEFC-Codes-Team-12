@@ -1,10 +1,15 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g
+global m_pay rho g E min_SM C_mw max_elev_deflection
+
 
 m_pay = 0.3;
 rho = 1.225;
 g = 9.8066;
+min_SM = 0.05;
+C_mw = -0.13;
+max_elev_deflection = 10*(pi/180);
+
 
 % Signatures can be worked out later
 
@@ -21,6 +26,67 @@ g = 9.8066;
 % 10 - Cl_hnom,
 % 11 - x_h
 
+%Calculate CG shift
+function[delta_x_pay] = get_delta_x_pay(x,v)
+
+global min_SM C_mw
+b_w = x(1);
+c_w = x(2);
+Cl_nom = x(3);
+Cl_trim = x(4);
+C_tw = x(5);
+C_ww = x(6);
+N = x(7);
+b_h = x(8);
+c_h = x(9);
+Cl_hnom = x(10);
+x_h = x(11);
+
+S_w = b_w*c_w;
+S_h = b_h*c_h;
+a_w = 2*pi/(1+(2/(b_w/c_w)));
+a_h = 2*pi/(1+(2/(b_h/c_h)));
+M_w = S_w*c_w*C_mw;
+
+x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
+x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_hC_lhnom);
+
+delta_x_pay = x_np - c_w*min_SM-x_cg;
+
+
+end
+
+%Calculate elevator trim constraint
+function[con_elev_deflection] = get_elev_deflection(x)
+
+global min_SM C_mw max_elev_deflection
+b_w = x(1);
+c_w = x(2);
+Cl_nom = x(3);
+Cl_trim = x(4);
+C_tw = x(5);
+C_ww = x(6);
+N = x(7);
+b_h = x(8);
+c_h = x(9);
+Cl_hnom = x(10);
+x_h = x(11);
+
+S_w = b_w*c_w;
+S_h = b_h*c_h;
+a_w = 2*pi/(1+(2/(b_w/c_w)));
+a_h = 2*pi/(1+(2/(b_h/c_h)));
+M_w = S_w*c_w*C_mw;
+
+x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
+x_cgtrim = x_np-c*min_SM;
+Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S*h*(x_cgtrim-x_h));
+delta_alpha = (Cl_trim-Cl_nom)/a_w;
+
+elev_deflection = (Cl_htrim-Cl_hnom-delta_alpha*a*h)/a_h;
+con_elev_deflection = elev_deflection - max_elev_deflection;
+
+end
 
 % Calculates velocity
 function [v] = get_v(x)
