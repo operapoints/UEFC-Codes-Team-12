@@ -13,7 +13,7 @@ max_elev_deflection = 10*(pi/180);
 
 % Signatures can be worked out later
 
-% The design is encoded as a (11,) array of design parameters:
+% The design is encoded as a (12,) array of design parameters:
 % 1 - b_w, 
 % 2 - c_w,
 % 3 - Cl_nom,
@@ -188,7 +188,7 @@ function [delta_cg] = get_delta_cg(x)
 end
 
 % Calculate tip deflection
-function [del_tip] = get_del_tip(x,m_tot)
+function [d_b] = get_d_b(x,m_tot)
 global m_pay rho g
     b_w = x(1);
     c_w = x(2);
@@ -244,7 +244,7 @@ global m_pay rho g
     N = x(16);
 
     v = get_v(x)
-    R = ((v^2)*sqrt((N^2) - 1))/g
+    r_turn = ((v^2)*sqrt((N^2) - 1))/g
 
 end
 
