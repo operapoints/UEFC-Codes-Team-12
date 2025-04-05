@@ -24,10 +24,11 @@ max_elev_deflection = 10*(pi/180);
 % 8 - b_h,
 % 9 - c_h,
 % 10 - Cl_hnom,
-% 11 - x_h
+% 11 - x_h,
+% 12 - SM_trim
 
 %Calculate CG shift
-function[delta_x_pay] = get_delta_x_pay(x,v)
+function[delta_x_pay] = get_delta_x_pay(x)
 
 global min_SM C_mw
 b_w = x(1);
@@ -41,6 +42,7 @@ b_h = x(8);
 c_h = x(9);
 Cl_hnom = x(10);
 x_h = x(11);
+SM_trim = x(12);
 
 S_w = b_w*c_w;
 S_h = b_h*c_h;
@@ -51,7 +53,7 @@ M_w = S_w*c_w*C_mw;
 x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
 x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_hC_lhnom);
 
-delta_x_pay = x_np - c_w*min_SM-x_cg;
+delta_x_pay = x_np - c_w*SM_trim-x_cg;
 
 
 end
@@ -71,6 +73,7 @@ b_h = x(8);
 c_h = x(9);
 Cl_hnom = x(10);
 x_h = x(11);
+SM_trim = x(12);
 
 S_w = b_w*c_w;
 S_h = b_h*c_h;
@@ -79,7 +82,7 @@ a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
 x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
-x_cgtrim = x_np-c*min_SM;
+x_cgtrim = x_np-c*SM_trim;
 Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S*h*(x_cgtrim-x_h));
 delta_alpha = (Cl_trim-Cl_nom)/a_w;
 
