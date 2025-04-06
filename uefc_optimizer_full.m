@@ -196,20 +196,16 @@ function [d_b] = get_d_b(x,m_tot)
 global m_pay rho g
     b_w = x(1);
     c_w = x(2);
-    tau_w = x(3);
-    lam_w = x(4);
-    tau_w = x(5);
-    Cl_w = x(6);
-    Ct_w = x(7);
-    Cw_w = x(8);
-    b_h = x(9);
-    c_h = x(10);
-    tau_h = x(11);
-    lam_h = x(12);
-    Cl_h = x(13);
-    Ct_h = x(14);
-    Cw_h = x(15);
-    N = x(16);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
     
     v = get_v(x);
     A = b_w * c_w;
@@ -232,23 +228,19 @@ function [r_turn] = get_r_turn(x,v)
 global m_pay rho g
     b_w = x(1);
     c_w = x(2);
-    tau_w = x(3);
-    lam_w = x(4);
-    tau_w = x(5);
-    Cl_w = x(6);
-    Ct_w = x(7);
-    Cw_w = x(8);
-    b_h = x(9);
-    c_h = x(10);
-    tau_h = x(11);
-    lam_h = x(12);
-    Cl_h = x(13);
-    Ct_h = x(14);
-    Cw_h = x(15);
-    N = x(16);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
 
     v = get_v(x)
-    r_turn = ((v^2)*sqrt((N^2) - 1))/g;;
+    r_turn = ((v^2)*sqrt((N^2) - 1))/g;
 
 end
 
