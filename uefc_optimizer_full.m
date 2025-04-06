@@ -56,7 +56,7 @@ M_w = S_w*c_w*C_mw;
 x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
 x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_h*C_lhnom);
 
-delta_x_pay = (x_np - c_w*SM_trim-x_cg)*((m_tot+m_pay)/m_pay);
+delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 
 
 end
