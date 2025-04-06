@@ -29,7 +29,7 @@ rho_caps = 1000; % Find actual value for this
 % 12 - SM_trim  Trim static margin
 
 %Calculate CG shift
-function[delta_x_pay] = get_delta_x_pay(x)
+function[delta_x_pay] = get_delta_x_pay(x, m_tot)
 
 global min_SM C_mw
 b_w = x(1);
@@ -45,16 +45,18 @@ Cl_hnom = x(10);
 x_h = x(11);
 SM_trim = x(12);
 
+W_tot = m_tot * g;
+
 S_w = b_w*c_w;
 S_h = b_h*c_h;
 a_w = 2*pi/(1+(2/(b_w/c_w)));
 a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
-x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
-x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_hC_lhnom);
+x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
+x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_h*C_lhnom);
 
-delta_x_pay = x_np - c_w*SM_trim-x_cg;
+delta_x_pay = (x_np - c_w*SM_trim-x_cg)*((m_tot+m_pay)/m_pay);
 
 
 end
