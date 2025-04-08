@@ -101,14 +101,14 @@ con_elev_deflection = elev_deflection - max_elev_deflection;
 end
 
 % Calculates velocity
-function [v] = get_v(x)
+function [v] = get_v(x,m_tot)
 global m_pay rho g
     b_w = x(1);
     c_w = x(2);
     N =  x(7);
     Cl_nom = x(3);
 
-    W = get_m_tot(x) * g;
+    W = m_tot * g;
     S = b_w*c_w;
     v = sqrt((N*W)/((1/2)*rho*Cl_nom));
 end
@@ -219,10 +219,13 @@ global g
     b_w = x(1);
     c_w = x(2);
     S_w = b_w*c_w;
+
+    fuse_len_delta = (x_h - 1)*2;
+    fuse_len_delta_m = 0.0425*fuse_len_delta;
     
 
 
-    W_fusl = (mfuse0 + mfusel * ((b_w)/bPV) + mfuseS * ((S_w)/SPV))*g;
+    W_fusl = (mfuse0 + mfusel * ((b_w)/bPV) + mfuseS * ((S_w)/SPV)+fuse_len_delta_m)*g;
 
 end
 
@@ -290,7 +293,6 @@ global m_pay rho g
     x_h = x(11);
     SM_trim = x(12);
 
-    v = get_v(x);
     r_turn = ((v^2)*sqrt((N^2) - 1))/g;
 
 end
@@ -315,15 +317,22 @@ end
 % 1D vector in ceq.
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
-
-v = get_v(x);
+m_tot = get_m_tot(x);
+v = get_v(x,m_tot);
 T_max = get_T_max(v);
 F_d = get_F_d(x,v);
+d_b = get_d_b(x,m_tot);
 con_thrust_drag = F_d - T_max;
-
+con_d_b = d_b - 0.10;
+r_turn = get_r_turn(x,v);
+con_r_turn = r_turn - 12.5;
+con_elev_deflection = get_elev_deflection(x);
 
 c = [];
 ceq = [con_thrust_drag;
+    con_d_b;
+    con_r_turn;
+    con_elev_deflection;
     ];
 
 end
