@@ -9,7 +9,7 @@ g = 9.8066;
 min_SM = 0.05;
 C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
-rho_caps = 1000; %TODO: actual value for this
+rho_caps = 80; %TODO: actual value for this
 tau = 0.12;
 lam = 0.5;
 
@@ -241,7 +241,7 @@ global m_pay rho g
     x_h = x(11);
     SM_trim = x(12);
 
-    v = get_v(x)
+    v = get_v(x);
     r_turn = ((v^2)*sqrt((N^2) - 1))/g;
 
 end
@@ -251,6 +251,12 @@ end
 % optimizing for each objective separately
 function [obj] = get_obj(x)
 
+v = get_v(x);
+delta_x_pay = get_delta_x_pay(x);
+
+obj = get_v;
+% TODO: Normalize obj by sub objectives
+
 end
 
 % We will likely use the ga optimizer.
@@ -258,6 +264,8 @@ end
 % 1D vector in ceq.
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
+
+
 
 c = [];
 
