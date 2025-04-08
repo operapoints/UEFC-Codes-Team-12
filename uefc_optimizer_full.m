@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu
 
 
 m_pay = 0.3;
@@ -13,6 +13,7 @@ rho_caps = 80; %TODO: actual value for this
 tau = 0.12;
 lam = 0.5;
 rho_balsa = 0;
+mu = 1.8e-5;
 
 
 % Signatures can be worked out later
@@ -112,6 +113,61 @@ end
 
 % Calculates drag force
 function [F_d] = get_F_d(x,v)
+    global rho mu tau
+    b_w = x(1);
+    c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+    q = 0.5*rho*v^2;
+    S_w = c_w*b_w;
+
+    SPV       = 0.225 ;
+    CDA_fuse0 = 0.002;
+    CDA_fuseS = 0.002;
+    CDfuse = (1/S) * (CDA_fuse0 + CDA_fuseS*(S/SPV));
+    F_d_fuse = q*S_w*CDfuse;
+    
+    Re_w = rho*v*c_w/mu;
+    cd0    = 0.020*(1+tau^2);
+    cd1    = -0.005/(1+6*tau);
+    cd2    = 0.160/(1+60*tau);
+    cd8    = 1.0;
+    cl0    = 1.25 - 3*tau;
+    Re_ref = 1E5;
+    Re_a   = -0.75;
+    cl2d   = Cl_nom;
+    cdpfac = cd0 + cd1*(cl2d-cl0) + cd2*(cl2d-cl0)^2 + cd8*(cl2d-cl0)^8;
+    CDp_w    = (cdpfac*(Re_w/Re_ref)^Re_a);
+    F_dp_w = q*S_w*CDp_w;
+
+    CDi_w = (Cl_nom^2)/(np.pi*e*(b_w/c_w));
+    F_di_w = q*S_w*CDi_w;
+
+    Re_h = rho*v*c_h/mu;
+    cd0    = 0.020;
+    cd1    = -0.005;
+    cd2    = 0.160;
+    cd8    = 1.0;
+    cl0    = 1.25;
+    Re_ref = 1E5;
+    Re_a   = -0.75;
+    cl2d   = Cl_hnom;
+    cdpfac = cd0 + cd1*(cl2d-cl0) + cd2*(cl2d-cl0)^2 + cd8*(cl2d-cl0)^8;
+    CDp_h    = (cdpfac*(Re_h/Re_ref)^Re_a);
+    F_dp_h = q*S_h*CDp_h;
+
+    CDi_h = (Cl_hnom^2)/(np.pi*e*(b_h/c_h));
+    F_di_h = q*S_h*CDi_h;
+
+    F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
 
 end
 
