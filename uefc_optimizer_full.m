@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lambda
+global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lam
 
 
 m_pay = 0.3;
@@ -11,7 +11,7 @@ C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
 rho_caps = 1000; %TODO: actual value for this
 tau = 0.12;
-lambda = 0.5;
+lam = 0.5;
 
 
 % Signatures can be worked out later
@@ -196,7 +196,7 @@ end
 
 % Calculate tip deflection
 function [d_b] = get_d_b(x,m_tot)
-global m_pay rho g
+global m_pay rho g lam tau
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -215,8 +215,8 @@ global m_pay rho g
     L_0 = (1/2)*Cl_w *(v^2)* rho * A;
 
     E = 3000000000;
-    Gamma =  @(y) 1+((lam_w-1)/(lam_w + 1))-(((2.*y)/(b/2)).*((lam_w-1)/(lam_w+1)));
-    I =@(y) (1/2).*Gamma(y).*((tau_w.*c_w)^2).*Ct_w.*Cw_w;
+    Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b/2)).*((lam-1)/(lam+1)));
+    I =@(y) (1/2).*Gamma(y).*((tau.*c_w)^2).*C_tw.*C_ww;
     Mx = @(y) (L_0/24).*(2.*b.^2.*sqrt(1-(4/b.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b.^2).*y.^2) - 3.*pi.*b.*y + 6.*b.*y.*asin(2.*y/b));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
