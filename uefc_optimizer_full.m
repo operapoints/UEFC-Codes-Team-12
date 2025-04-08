@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lam
+global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa
 
 
 m_pay = 0.3;
@@ -12,6 +12,7 @@ max_elev_deflection = 10*(pi/180);
 rho_caps = 80; %TODO: actual value for this
 tau = 0.12;
 lam = 0.5;
+rho_balsa = 0;
 
 
 % Signatures can be worked out later
@@ -128,26 +129,24 @@ end
 
 % Calculate wing and tail weight
 function [W_wing_tail_weight] = get_wh(x)
-global g rho_foam
+global g rho_foam lam tau rho_balsa
     Afac = 0.66;
     b_w = x(1);
     c_w = x(2);
-    lam_w = x(3);
-    tau_w = x(5);
+    lam_w = lam;
+    tau_w = tau;
     AR_w = b_w/c_w;
     S_w = b_w*c_w;
     b_h = x(8);
     c_h = x(9);
-    lam_h = x(10);
-    tau_h = x(12);
-    AR_h = b_h/c_h;
+    tau_h = .0017;
     S_h = b_h*c_h;
 
 
     Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
-    Wtail = (4/3)*Afac*rho_foam*g*tau_h*S_h^1.5*AR_h^(-0.5)*(lam_h^2+lam_h+1)/(lam_h+1)^2;
     W_caps = 2*C_tw*C_ww*b_w*rho_caps*g;
-    W_wing_tail_weight = Wwing + Wtail+W_caps;
+    % W_tail = rho_balsa*tau_h*S_h;
+    W_wing_tail_weight = Wwing + W_caps;
 
 end
 
@@ -163,12 +162,10 @@ global g
     b_w = x(1);
     c_w = x(2);
     S_w = b_w*c_w;
-    b_h = x(8);
-    c_h = x(9);
-    S_h = b_w*c_w;
+    
 
 
-    W_fusl = (mfuse0 + mfusel * ((b_w+b_h)/bPV) + mfuseS * ((S_w+S_h)/SPV))*g;
+    W_fusl = (mfuse0 + mfusel * ((b_w)/bPV) + mfuseS * ((S_w)/SPV))*g;
 
 end
 
