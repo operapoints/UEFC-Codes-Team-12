@@ -1,6 +1,7 @@
+warning('off', 'all');
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h spaneff
 
 
 m_pay = 0.3;
@@ -9,13 +10,14 @@ g = 9.8066;
 min_SM = 0.05;
 C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
-rho_caps = 80; %TODO: actual value for this
+rho_caps = 80; 
 tau = 0.12;
 lam = 0.5;
 rho_balsa = 0;
 rho_foam = 32;
 mu = 1.8e-5;
 t_h = 1.6e-3;
+spaneff = 0.95;
 
 
 % Signatures can be worked out later
@@ -37,7 +39,7 @@ t_h = 1.6e-3;
 %Calculate CG shift
 function[delta_x_pay] = get_delta_x_pay(x, m_tot)
 
-global min_SM C_mw
+global min_SM C_mw g m_pay
 b_w = x(1);
 c_w = x(2);
 Cl_nom = x(3);
@@ -60,7 +62,7 @@ a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
 x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
-x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_h*C_lhnom);
+x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_h*Cl_hnom);
 
 delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 
@@ -91,11 +93,11 @@ a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
 x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
-x_cgtrim = x_np-c*SM_trim;
-Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S*h*(x_cgtrim-x_h));
+x_cgtrim = x_np-c_w*SM_trim;
+Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S_h*(x_cgtrim-x_h));
 delta_alpha = (Cl_trim-Cl_nom)/a_w;
 
-elev_deflection = (Cl_htrim-Cl_hnom-delta_alpha*a*h)/a_h;
+elev_deflection = (Cl_htrim-Cl_hnom-delta_alpha*a_h)/a_h;
 con_elev_deflection = elev_deflection - max_elev_deflection;
 
 end
@@ -103,19 +105,28 @@ end
 % Calculates velocity
 function [v] = get_v(x,m_tot)
 global m_pay rho g
-    b_w = x(1);
-    c_w = x(2);
-    N =  x(7);
-    Cl_nom = x(3);
+b_w = x(1);
+c_w = x(2);
+Cl_nom = x(3);
+Cl_trim = x(4);
+C_tw = x(5);
+C_ww = x(6);
+N = x(7);
+b_h = x(8);
+c_h = x(9);
+Cl_hnom = x(10);
+x_h = x(11);
+SM_trim = x(12);
 
     W = m_tot * g;
-    S = b_w*c_w;
-    v = sqrt((N*W)/((1/2)*rho*Cl_nom));
+    S_w = b_w*c_w;
+    S_h = b_h*c_h;
+    v = sqrt((2*N*W)/(rho*(S_w*Cl_nom+S_h*Cl_hnom)));
 end
 
 % Calculates drag force
 function [F_d] = get_F_d(x,v)
-    global rho mu tau
+    global rho mu tau spaneff
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -130,6 +141,7 @@ function [F_d] = get_F_d(x,v)
     SM_trim = x(12);
     q = 0.5*rho*v^2;
     S_w = c_w*b_w;
+    S_h = c_h*b_h;
 
     SPV       = 0.225 ;
     CDA_fuse0 = 0.002;
@@ -150,23 +162,14 @@ function [F_d] = get_F_d(x,v)
     CDp_w    = (cdpfac*(Re_w/Re_ref)^Re_a);
     F_dp_w = q*S_w*CDp_w;
 
-    CDi_w = (Cl_nom^2)/(np.pi*e*(b_w/c_w));
+    CDi_w = (Cl_nom^2)/(pi*spaneff*(b_w/c_w));
     F_di_w = q*S_w*CDi_w;
 
-    Re_h = rho*v*c_h/mu;
-    cd0    = 0.020;
-    cd1    = -0.005;
-    cd2    = 0.160;
-    cd8    = 1.0;
-    cl0    = 1.25;
-    Re_ref = 1E5;
-    Re_a   = -0.75;
-    cl2d   = Cl_hnom;
-    cdpfac = cd0 + cd1*(cl2d-cl0) + cd2*(cl2d-cl0)^2 + cd8*(cl2d-cl0)^8;
-    CDp_h    = (cdpfac*(Re_h/Re_ref)^Re_a);
+
+    CDp_h    = 0.01;
     F_dp_h = q*S_h*CDp_h;
 
-    CDi_h = (Cl_hnom^2)/(np.pi*e*(b_h/c_h));
+    CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
     F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
     F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
@@ -188,20 +191,32 @@ end
 % Calculate wing and tail weight
 function [W_wing_tail_weight] = get_wh(x)
 global g rho_foam lam tau rho_balsa t_h
-    Afac = 0.66;
+
     b_w = x(1);
     c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+
+    Afac = 0.66;
+
     lam_w = lam;
     tau_w = tau;
     AR_w = b_w/c_w;
     S_w = b_w*c_w;
-    b_h = x(8);
-    c_h = x(9);
+
     S_h = b_h*c_h;
 
 
     Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
-    W_caps = 2*C_tw*C_ww*b_w*rho_caps*g;
+    W_caps = 2*C_tw*C_ww*b_w*rho_balsa*g;
     W_tail = rho_balsa*S_h*t_h;
     W_wing_tail_weight = Wwing + W_caps + W_tail;
 
@@ -210,7 +225,7 @@ end
 % Calculate the weight of the fuselage
 function [W_fusl] = get_wfusl(x)
 global g
-    mfuse0 = .185;
+    mfuse0 = .245;
     mfusel = .060;
     mfuseS = .026;
     SPV = 0.225;
@@ -218,6 +233,16 @@ global g
 
     b_w = x(1);
     c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
     S_w = b_w*c_w;
 
     fuse_len_delta = (x_h - 1)*2;
@@ -231,16 +256,16 @@ end
 
 
 % This calculates the maximum prop thrust as a function of velocity
-function [T_max] = get_T_max(x)
+function [T_max] = get_T_max(v)
 global m_pay rho g
     ct0 = 0.2093;
     ct1 = -0.2484;
     ct2 = -0.1386;
     Tmax_static = 2;
     Rprop       = 0.1016;
-    Aprop       = np.pi*Rprop^2;
-    Omega  = np.sqrt(Tmax_static/(0.5*rho*Rprop^2*Aprop*ct0));
-    Lambda = V/(Omega*Rprop);
+    Aprop       = pi*Rprop^2;
+    Omega  = sqrt(Tmax_static/(0.5*rho*Rprop^2*Aprop*ct0));
+    Lambda = v/(Omega*Rprop);
     CT = ct0+ct1*Lambda+ct2*Lambda^2;
     T_max = CT*0.5*rho*((Omega*Rprop)^2)*Aprop;
 end
@@ -261,19 +286,18 @@ global m_pay rho g lam tau
     x_h = x(11);
     SM_trim = x(12);
     
-    v = get_v(x);
-    A = b_w * c_w;
-    L_0 = m_tot * g * N;
 
-    E = 3000000000;
-    Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b/2)).*((lam-1)/(lam+1)));
+    L_0 = m_tot * g * N * (4/(pi*b_w));
+
+    E = 3e+9;
+    Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_w/2)).*((lam-1)/(lam+1)));
     I =@(y) (1/2).*Gamma(y).*((tau.*c_w)^2).*C_tw.*C_ww;
-    Mx = @(y) (L_0/24).*(2.*b.^2.*sqrt(1-(4/b.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b.^2).*y.^2) - 3.*pi.*b.*y + 6.*b.*y.*asin(2.*y/b));
+    Mx = @(y) (L_0/24).*(2.*b_w.^2.*sqrt(1-(4/b_w.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_w.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
-    u = integral(u_prime, 0, b/2);
+    u = integral(u_prime, 0, b_w/2);
     % y = b/2; Is this intentional? unused currently
-    d_b = (eval(u)/b);
+    d_b = (u/b_w);
 
 end
 
@@ -293,7 +317,7 @@ global m_pay rho g
     x_h = x(11);
     SM_trim = x(12);
 
-    r_turn = ((v^2)*sqrt((N^2) - 1))/g;
+    r_turn = ((v^2)/(g*sqrt((N^2) - 1)));
 
 end
 
@@ -301,15 +325,18 @@ end
 % Remember to normalize, we can get approximate scaling factors by
 % optimizing for each objective separately
 function [obj] = get_obj(x)
+try
 
-v = get_v(x);
-m_tot = get_m_tot(x);
-delta_x_pay = get_delta_x_pay(x,m_tot);
-
-% obj = v;
-obj = delta_x_pay;
-% TODO: Normalize obj by sub objectives
-
+    m_tot = get_m_tot(x);
+    v = get_v(x,m_tot);
+    delta_x_pay = get_delta_x_pay(x,m_tot);
+    
+    obj = -v;
+    %obj = delta_x_pay;
+    % TODO: Normalize obj by sub objectives
+catch
+    obj = 1e6;
+end
 end
 
 % We will likely use the ga optimizer.
@@ -317,26 +344,60 @@ end
 % 1D vector in ceq.
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
-m_tot = get_m_tot(x);
-v = get_v(x,m_tot);
-T_max = get_T_max(v);
-F_d = get_F_d(x,v);
-d_b = get_d_b(x,m_tot);
-con_thrust_drag = F_d - T_max;
-con_d_b = d_b - 0.10;
-r_turn = get_r_turn(x,v);
-con_r_turn = r_turn - 12.5;
-con_elev_deflection = get_elev_deflection(x);
-
-c = [];
-ceq = [con_thrust_drag;
-    con_d_b;
-    con_r_turn;
-    con_elev_deflection;
-    ];
+try
+    m_tot = get_m_tot(x);
+    v = get_v(x,m_tot);
+    T_max = get_T_max(v);
+    F_d = get_F_d(x,v);
+    d_b = get_d_b(x,m_tot);
+    con_thrust_drag = F_d - T_max;
+    con_d_b = d_b - 0.10;
+    r_turn = get_r_turn(x,v);
+    con_r_turn = r_turn - 12.5;
+    con_elev_deflection = get_elev_deflection(x);
+    
+    c = [];
+    intm = [con_thrust_drag;
+        con_d_b;
+        con_r_turn;
+        con_elev_deflection;
+        ];
+    has_invalid = any(isnan(intm) | isinf(intm));
+    if has_invalid
+        
+        c = [];
+        ceq = [1e6,1e6,1e6,1e6];
+    else
+        c = [];
+        ceq = max(0,intm);
+    end
+catch
+    ceq = [1e6,1e6,1e6,1e6];
+end
 
 end
 
+
+%    b_w = x(1);
+%    c_w = x(2);
+%    Cl_nom = x(3);
+%    Cl_trim = x(4);
+%    C_tw = x(5);
+%    C_ww = x(6);
+%    N = x(7);
+%    b_h = x(8);
+%    c_h = x(9);
+%    Cl_hnom = x(10);
+%    x_h = x(11);
+%    SM_trim = x(12);
+
 % Optimization bounds
-print = get_d_b([1,1,1,1,1,1,1,1,1,1,1,1])
-% Optimizer run parameters
+%[print1,print2] = get_constraints([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
+options = optimoptions('ga', 'Display', 'iter');
+%options.TolCon = 0.03;
+options.PopulationSize = 20;
+intcon = [];
+lb = [0,0,0,0,0,0,1,0,0,-1,0,0.05];
+ub = [3,0.5,0.8,0.8,0.005,0.002,4,0.4572,0.1524,0.8,2,0.3];
+[x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
+
