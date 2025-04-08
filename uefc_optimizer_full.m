@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam
 
 
 m_pay = 0.3;
@@ -13,6 +13,7 @@ rho_caps = 80; %TODO: actual value for this
 tau = 0.12;
 lam = 0.5;
 rho_balsa = 0;
+rho_foam = 32;
 mu = 1.8e-5;
 
 
