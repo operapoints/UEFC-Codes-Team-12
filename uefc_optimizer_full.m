@@ -332,7 +332,7 @@ try
     delta_x_pay = get_delta_x_pay(x,m_tot);
     
     obj = -v;
-    %obj = delta_x_pay;
+    %obj = -delta_x_pay;
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -395,7 +395,7 @@ end
 %[print1,print2] = get_constraints([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
 options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
-options.PopulationSize = 20;
+options.PopulationSize = 2000;
 intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-1,0,0.05];
 ub = [3,0.5,0.8,0.8,0.005,0.002,4,0.4572,0.1524,0.8,2,0.3];
