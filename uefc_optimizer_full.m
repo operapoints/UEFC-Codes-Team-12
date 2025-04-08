@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps
+global m_pay rho g E min_SM C_mw max_elev_deflection rho_caps tau lambda
 
 
 m_pay = 0.3;
@@ -9,7 +9,9 @@ g = 9.8066;
 min_SM = 0.05;
 C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
-rho_caps = 1000; % Find actual value for this
+rho_caps = 1000; %TODO: actual value for this
+tau = 0.12;
+lambda = 0.5;
 
 
 % Signatures can be worked out later
@@ -60,7 +62,8 @@ delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 
 
 end
-
+['' ...
+    '']
 %Calculate elevator trim constraint
 function[con_elev_deflection] = get_elev_deflection(x)
 
