@@ -1,6 +1,6 @@
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h
 
 
 m_pay = 0.3;
@@ -15,6 +15,7 @@ lam = 0.5;
 rho_balsa = 0;
 rho_foam = 32;
 mu = 1.8e-5;
+t_h = 1.6e-3;
 
 
 % Signatures can be worked out later
@@ -133,7 +134,7 @@ function [F_d] = get_F_d(x,v)
     SPV       = 0.225 ;
     CDA_fuse0 = 0.002;
     CDA_fuseS = 0.002;
-    CDfuse = (1/S) * (CDA_fuse0 + CDA_fuseS*(S/SPV));
+    CDfuse = (1/S_w) * (CDA_fuse0 + CDA_fuseS*(S_w/SPV));
     F_d_fuse = q*S_w*CDfuse;
     
     Re_w = rho*v*c_w/mu;
@@ -166,7 +167,7 @@ function [F_d] = get_F_d(x,v)
     F_dp_h = q*S_h*CDp_h;
 
     CDi_h = (Cl_hnom^2)/(np.pi*e*(b_h/c_h));
-    F_di_h = q*S_h*CDi_h;
+    F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
     F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
 
@@ -186,7 +187,7 @@ end
 
 % Calculate wing and tail weight
 function [W_wing_tail_weight] = get_wh(x)
-global g rho_foam lam tau rho_balsa
+global g rho_foam lam tau rho_balsa t_h
     Afac = 0.66;
     b_w = x(1);
     c_w = x(2);
@@ -196,14 +197,13 @@ global g rho_foam lam tau rho_balsa
     S_w = b_w*c_w;
     b_h = x(8);
     c_h = x(9);
-    tau_h = .0017;
     S_h = b_h*c_h;
 
 
     Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
     W_caps = 2*C_tw*C_ww*b_w*rho_caps*g;
-    % W_tail = rho_balsa*tau_h*S_h;
-    W_wing_tail_weight = Wwing + W_caps;
+    W_tail = rho_balsa*S_h*t_h;
+    W_wing_tail_weight = Wwing + W_caps + W_tail;
 
 end
 
@@ -240,11 +240,6 @@ global m_pay rho g
     Lambda = V/(Omega*Rprop);
     CT = ct0+ct1*Lambda+ct2*Lambda^2;
     T_max = CT*0.5*rho*((Omega*Rprop)^2)*Aprop;
-end
-
-% Calculate the delta in cg position
-function [delta_cg] = get_delta_cg(x)
-
 end
 
 % Calculate tip deflection
@@ -306,9 +301,11 @@ end
 function [obj] = get_obj(x)
 
 v = get_v(x);
-delta_x_pay = get_delta_x_pay(x);
+m_tot = get_m_tot(x);
+delta_x_pay = get_delta_x_pay(x,m_tot);
 
-obj = get_v;
+% obj = v;
+obj = delta_x_pay;
 % TODO: Normalize obj by sub objectives
 
 end
@@ -319,9 +316,15 @@ end
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
 
+v = get_v(x);
+T_max = get_T_max(v);
+F_d = get_F_d(x,v);
+con_thrust_drag = F_d - T_max;
 
 
 c = [];
+ceq = [con_thrust_drag;
+    ];
 
 end
 
