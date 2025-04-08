@@ -212,7 +212,7 @@ global m_pay rho g lam tau
     
     v = get_v(x);
     A = b_w * c_w;
-    L_0 = (1/2)*Cl_w *(v^2)* rho * A;
+    L_0 = m_tot * g * N;
 
     E = 3000000000;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b/2)).*((lam-1)/(lam+1)));
