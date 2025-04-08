@@ -62,8 +62,7 @@ delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 
 
 end
-['' ...
-    '']
+
 %Calculate elevator trim constraint
 function[con_elev_deflection] = get_elev_deflection(x)
 
