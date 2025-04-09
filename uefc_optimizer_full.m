@@ -480,13 +480,14 @@ function [c,ceq] = get_constraints_debug(x)
     con_d_b = d_b - 0.10;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
-    [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
+    delta_x_pay = get_delta_x_pay(x,m_tot)
+    [con_elev_deflection, Cl_htrim] = get_elev_deflection(x)
     W = m_tot*g;
-    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
-    T_trim = get_T_max(v_trim);
-    F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim);
+    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)))
+    T_trim = get_T_max(v_trim)
+    F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim)
     con_trim_thrust = F_dtrim - T_trim;
-    r_turn_trim = get_r_turn(x,v_trim);
+    r_turn_trim = get_r_turn(x,v_trim)
     con_trim_r_turn = r_turn_trim - 12.5;
 
 
@@ -520,9 +521,24 @@ options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
 options.PopulationSize = 20;
 intcon = [];
-lb = [0,0,0,0,0,0,1,0,0,-1,0,0.05];
-ub = [3,0.5,0.8,0.8,0.005,0.002,4,0.4572,0.1524,0.8,2,0.3];
+lb = [0,0,0,0,0,0,1,0,0,-1,1,0.05];
+ub = [3,0.5,0.8,0.8,0.005,0.002,2,1,0.5,0.8,2,0.3];
 [x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
 %m_tot = get_m_tot()
+%x(11) = 0.2993;
+%print = get_constraints_debug(x);
+%disp(x)
 
+%    b_w = 2,1105;
+%    c_w = 0.3334;
+%    Cl_nom = 0.8;
+%    Cl_trim = 0.52;
+%    C_tw = 0.0036;
+%    C_ww = 0.0018;
+%    N = 1.1265;
+%    b_h = 0.8312;
+%    c_h = 0.1143;
+%    Cl_hnom = 0.4313;
+%    x_h = 0.2993;
+%    SM_trim = 0.2176;
 
