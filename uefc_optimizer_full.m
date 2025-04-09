@@ -519,10 +519,10 @@ end
 %[print1,print2] = get_constraints_debug([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
 options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
-options.PopulationSize = 20;
+options.PopulationSize = 200;
 intcon = [];
-lb = [0,0,0,0,0,0,1,0,0,-1,1,0.05];
-ub = [3,0.5,0.8,0.8,0.005,0.002,2,1,0.5,0.8,2,0.3];
+lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05];
+ub = [3,0.5,0.8,0.8,0.005,0.002,1.5,0.7,0.25,0.8,2,0.0501];
 [x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
 %m_tot = get_m_tot()
 %x(11) = 0.2993;
