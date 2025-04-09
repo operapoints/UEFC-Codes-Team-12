@@ -70,7 +70,7 @@ delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 end
 
 %Calculate elevator trim constraint
-function[con_elev_deflection] = get_elev_deflection(x)
+function[con_elev_deflection,Cl_htrim] = get_elev_deflection(x)
 
 global min_SM C_mw max_elev_deflection
 b_w = x(1);
@@ -173,6 +173,58 @@ function [F_d] = get_F_d(x,v)
     F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
     F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
+
+end
+
+% Calculates trim drag force
+function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
+    global rho mu tau spaneff
+    b_w = x(1);
+    c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+    q = 0.5*rho*v^2;
+    S_w = c_w*b_w;
+    S_h = c_h*b_h;
+
+    SPV       = 0.225 ;
+    CDA_fuse0 = 0.002;
+    CDA_fuseS = 0.002;
+    CDfuse = (1/S_w) * (CDA_fuse0 + CDA_fuseS*(S_w/SPV));
+    F_d_fuse = q*S_w*CDfuse;
+    
+    Re_w = rho*v*c_w/mu;
+    cd0    = 0.020*(1+tau^2);
+    cd1    = -0.005/(1+6*tau);
+    cd2    = 0.160/(1+60*tau);
+    cd8    = 1.0;
+    cl0    = 1.25 - 3*tau;
+    Re_ref = 1E5;
+    Re_a   = -0.75;
+    cl2d   = Cl_nom;
+    cdpfac = cd0 + cd1*(cl2d-cl0) + cd2*(cl2d-cl0)^2 + cd8*(cl2d-cl0)^8;
+    CDp_w    = (cdpfac*(Re_w/Re_ref)^Re_a);
+    F_dp_w = q*S_w*CDp_w;
+
+    CDi_w = (Cl_tirm^2)/(pi*spaneff*(b_w/c_w));
+    F_di_w = q*S_w*CDi_w;
+
+
+    CDp_h    = 0.01;
+    F_dp_h = q*S_h*CDp_h;
+
+    CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
+    F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
+
+    F_dtrim = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
 
 end
 
@@ -331,8 +383,8 @@ try
     v = get_v(x,m_tot);
     delta_x_pay = get_delta_x_pay(x,m_tot);
     
-    obj = -v;
-    %obj = -delta_x_pay;
+    %obj = -v;
+    obj = -delta_x_pay;
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -345,6 +397,19 @@ end
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
 try
+    b_w = x(1);
+    c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+
     m_tot = get_m_tot(x);
     v = get_v(x,m_tot);
     T_max = get_T_max(v);
@@ -354,25 +419,37 @@ try
     con_d_b = d_b - 0.10;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
-    con_elev_deflection = get_elev_deflection(x);
+    con_elev_deflection, Cl_htrim = get_elev_deflection(x);
+
+    v_trim = sqrt((2*N*W)/(rho*(S_w*Cl_trim+S_h*Cl_htrim)));
+    T_trim = get_T_max(v_trim);
+    F_dtrim = get_f_dtrim(x,v_trim,Cl_htrim);
+    con_trim_thrust = F_dtrim - T_trim;
+    r_turn_trim = get_r_turn(x,v_trim);
+    con_trim_r_turn = r_turn_trim - 12.5;
+
+
+
     
-    c = [];
     intm = [con_thrust_drag;
         con_d_b;
         con_r_turn;
         con_elev_deflection;
+        con_trim_thrust;
+        con_trim_r_turn;
         ];
     has_invalid = any(isnan(intm) | isinf(intm));
     if has_invalid
         
         c = [];
-        ceq = [1e6,1e6,1e6,1e6];
+        ceq = [1e6,1e6,1e6,1e6,1e6,1e6];
     else
         c = [];
         ceq = max(0,intm);
     end
 catch
-    ceq = [1e6,1e6,1e6,1e6];
+    c = [];
+    ceq = [1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -395,10 +472,11 @@ end
 %[print1,print2] = get_constraints([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
 options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
-options.PopulationSize = 2000;
+options.PopulationSize = 20;
 intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-1,0,0.05];
 ub = [3,0.5,0.8,0.8,0.005,0.002,4,0.4572,0.1524,0.8,2,0.3];
 [x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
 %m_tot = get_m_tot()
+
 
