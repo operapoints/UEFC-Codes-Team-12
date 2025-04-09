@@ -1,7 +1,7 @@
 warning('off', 'all');
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h spaneff
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h spaneff mass_margin
 
 
 m_pay = 0.3;
@@ -18,6 +18,7 @@ rho_foam = 32;
 mu = 1.8e-5;
 t_h = 1.6e-3;
 spaneff = 0.95;
+mass_margin = 1.1;
 
 
 % Signatures can be worked out later
@@ -167,7 +168,7 @@ function [F_d] = get_F_d(x,v)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.01;
+    CDp_h    = 0.015;
     F_dp_h = q*S_h*CDp_h;
 
     CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
@@ -219,7 +220,7 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.01;
+    CDp_h    = 0.015;
     F_dp_h = q*S_h*CDp_h;
 
     CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
@@ -231,13 +232,13 @@ end
 
 % Calculate total aircraft mass
 function [m_tot] = get_m_tot(x)
-global g m_pay
+global g m_pay mass_margin
 
     W_wing_tail_weight = get_wh(x);
     W_fusl = get_wfusl(x);
     W_pay = m_pay*g;
 
-    m_tot = (W_wing_tail_weight + W_pay + W_fusl)/g;
+    m_tot = (mass_margin*(W_wing_tail_weight + W_pay + W_fusl))/g;
 
 end
 
@@ -270,8 +271,9 @@ global g rho_foam lam tau rho_balsa t_h
 
     Wwing = (4/3)*Afac*rho_foam*g*tau_w*S_w^1.5*AR_w^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
     W_caps = 2*C_tw*C_ww*b_w*rho_balsa*g;
-    W_tail = rho_balsa*S_h*t_h;
-    W_wing_tail_weight = Wwing + W_caps + W_tail;
+    W_tail = (4/3)*Afac*rho_foam*g*tau_w*S_h^1.5*(b_h/c_h)^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
+    W_caps_h = 2*C_tw*C_ww*b_h*rho_balsa*g;
+    W_wing_tail_weight = Wwing + W_caps + W_tail+W_caps_h;
 
 end
 
@@ -344,7 +346,7 @@ global m_pay rho g lam tau
 
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_w/2)).*((lam-1)/(lam+1)));
-    I =@(y) (1/2).*Gamma(y).*((tau.*c_w)^2).*C_tw.*C_ww;
+    I =@(y) 2*((0.5.*Gamma(y).*tau.*c_h-(C_tw/2))^2).*C_tw.*C_ww;
     Mx = @(y) (L_0/24).*(2.*b_w.^2.*sqrt(1-(4/b_w.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_w.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
@@ -370,12 +372,12 @@ global m_pay rho g lam tau
     x_h = x(11);
     SM_trim = x(12);
     
-
-    L_0 = m_tot*((b_h*c_h*Clh_trim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N * (4/(pi*b_w));
+    %The factor of 1.5 in front is to account for control forces
+    L_0 = 1.5*m_tot*((b_h*c_h*Cl_htrim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N * (4/(pi*b_w));
 
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_h/2)).*((lam-1)/(lam+1)));
-    I =@(y) (1/2).*Gamma(y).*((tau.*c_h)^2).*C_tw.*C_ww;
+    I =@(y) 2*((0.5.*Gamma(y).*tau.*c_h-(C_tw/2))^2).*C_tw.*C_ww;
     Mx = @(y) (L_0/24).*(2.*b_h.^2.*sqrt(1-(4/b_h.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_h.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
@@ -417,7 +419,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/9.7434+delta_x_pay/1.0533);
+    obj = -(v/8.3492+delta_x_pay/1.2080);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -451,7 +453,7 @@ try
     F_d = get_F_d(x,v);
     d_b = get_d_b(x,m_tot);
     con_thrust_drag = F_d - T_max;
-    con_d_b = d_b - 0.05;
+    con_d_b = d_b-0.01;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
@@ -462,6 +464,8 @@ try
     con_trim_thrust = F_dtrim - T_trim;
     r_turn_trim = ((v_trim^2)/(g*sqrt((N_trim^2) - 1)));
     con_trim_r_turn = r_turn_trim - 12.5;
+    d_b_h = get_d_b_h(x,m_tot,Cl_htrim);
+    con_d_b_h = d_b_h-0.01;
 
 
 
@@ -472,6 +476,7 @@ try
         con_elev_deflection;
         con_trim_thrust;
         con_trim_r_turn;
+        con_d_b_h;
         ];
 
 
@@ -479,14 +484,14 @@ try
     if has_invalid
         
         c = [];
-        ceq = [1e6,1e6,1e6,1e6,1e6,1e6];
+        ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6];
     else
         c = [];
         ceq = intm;
     end
 catch
     c = [];
-    ceq = [1e6,1e6,1e6,1e6,1e6,1e6];
+    ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -514,14 +519,14 @@ options = optimoptions('fmincon', 'Display', 'iter','Algorithm','interior-point'
 %options.PopulationSize = 20;
 intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
-ub = [5,0.5,0.8,0.8,0.005,0.002,1.5,0.4,0.2,0.8,2,2,1.5];
+ub = [5,0.5,0.8,0.8,0.005,0.002,1.5,5,0.5,0.8,1.5,2,1.5];
 %[x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [2.7,0.2,0.7,0.46,0.005,0.002,1.1265,0.4,0.2,-0.1033,2,0.8,1.1];
+x0 = [3,0.2,0.7,0.46,0.005,0.002,1.1265,2,0.1,-0.1033,1.0,0.8,1.1];
+diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
 %disp(x)
 %x_dbg = x
 %x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
-%m_tot = get_m_tot(x_dbg)
 obj = get_obj(x)
-[cons1,cons2] = get_constraints(x)
+
