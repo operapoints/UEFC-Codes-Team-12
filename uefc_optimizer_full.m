@@ -214,7 +214,7 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     CDp_w    = (cdpfac*(Re_w/Re_ref)^Re_a);
     F_dp_w = q*S_w*CDp_w;
 
-    CDi_w = (Cl_tirm^2)/(pi*spaneff*(b_w/c_w));
+    CDi_w = (Cl_trim^2)/(pi*spaneff*(b_w/c_w));
     F_di_w = q*S_w*CDi_w;
 
 
@@ -396,7 +396,8 @@ end
 % 1D vector in ceq.
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
-try
+try    
+    global g rho
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -419,11 +420,11 @@ try
     con_d_b = d_b - 0.10;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
-    con_elev_deflection, Cl_htrim = get_elev_deflection(x);
-
-    v_trim = sqrt((2*N*W)/(rho*(S_w*Cl_trim+S_h*Cl_htrim)));
+    [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
+    W = m_tot*g;
+    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
     T_trim = get_T_max(v_trim);
-    F_dtrim = get_f_dtrim(x,v_trim,Cl_htrim);
+    F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim);
     con_trim_thrust = F_dtrim - T_trim;
     r_turn_trim = get_r_turn(x,v_trim);
     con_trim_r_turn = r_turn_trim - 12.5;
@@ -454,6 +455,51 @@ end
 
 end
 
+%Debug only
+function [c,ceq] = get_constraints_debug(x)
+    global g rho
+    b_w = x(1);
+    c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+
+    m_tot = get_m_tot(x);
+    v = get_v(x,m_tot);
+    T_max = get_T_max(v);
+    F_d = get_F_d(x,v);
+    d_b = get_d_b(x,m_tot);
+    con_thrust_drag = F_d - T_max;
+    con_d_b = d_b - 0.10;
+    r_turn = get_r_turn(x,v);
+    con_r_turn = r_turn - 12.5;
+    [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
+    W = m_tot*g;
+    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
+    T_trim = get_T_max(v_trim);
+    F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim);
+    con_trim_thrust = F_dtrim - T_trim;
+    r_turn_trim = get_r_turn(x,v_trim);
+    con_trim_r_turn = r_turn_trim - 12.5;
+
+
+
+    
+    intm = [con_thrust_drag;
+        con_d_b;
+        con_r_turn;
+        con_elev_deflection;
+        con_trim_thrust;
+        con_trim_r_turn;
+        ];
+end
 
 %    b_w = x(1);
 %    c_w = x(2);
@@ -469,7 +515,7 @@ end
 %    SM_trim = x(12);
 
 % Optimization bounds
-%[print1,print2] = get_constraints([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
+%[print1,print2] = get_constraints_debug([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
 options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
 options.PopulationSize = 20;
