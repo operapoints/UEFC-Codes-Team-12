@@ -62,7 +62,7 @@ a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
 x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
-x_cg = (x_h*S_h*Cl_nom-M_w)/(Cl_nom*S_w+S_h*Cl_hnom);
+x_cg = (x_h*S_h*Cl_hnom-M_w)/(Cl_nom*S_w+S_h*Cl_hnom);
 
 delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
 
@@ -400,4 +400,5 @@ intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-1,0,0.05];
 ub = [3,0.5,0.8,0.8,0.005,0.002,4,0.4572,0.1524,0.8,2,0.3];
 [x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
+%m_tot = get_m_tot()
 
