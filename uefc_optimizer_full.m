@@ -35,6 +35,7 @@ spaneff = 0.95;
 % 10 - Cl_hnom, Horizontal stab nominal lift coefficient
 % 11 - x_h,     Horizontal stab NP abscissa from main wing NP abscissa
 % 12 - SM_trim  Trim static margin
+% 13 - N_trim   Trim load factor
 
 %Calculate CG shift
 function[delta_x_pay] = get_delta_x_pay(x, m_tot)
@@ -64,7 +65,7 @@ M_w = S_w*c_w*C_mw;
 x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
 x_cg = (x_h*S_h*Cl_hnom-M_w)/(Cl_nom*S_w+S_h*Cl_hnom);
 
-delta_x_pay = (x_np - c_w*SM_trim-x_cg)*(m_tot/m_pay);
+delta_x_pay = (x_np - (c_w*SM_trim+x_cg))*(m_tot/m_pay);
 
 
 end
@@ -92,7 +93,7 @@ a_w = 2*pi/(1+(2/(b_w/c_w)));
 a_h = 2*pi/(1+(2/(b_h/c_h)));
 M_w = S_w*c_w*C_mw;
 
-x_np = (x_h+S_h*a_h)/(S_h*a_h+S_w*a_w);
+x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
 x_cgtrim = x_np-c_w*SM_trim;
 Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S_h*(x_cgtrim-x_h));
 delta_alpha = (Cl_trim-Cl_nom)/a_w;
@@ -339,7 +340,7 @@ global m_pay rho g lam tau
     SM_trim = x(12);
     
 
-    L_0 = m_tot * g * N * (4/(pi*b_w));
+    L_0 = m_tot*((b_w*c_w*Cl_nom)/(Cl_nom*b_w*c_w+Cl_hnom*b_h*c_h)) * g * N * (4/(pi*b_w));
 
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_w/2)).*((lam-1)/(lam+1)));
@@ -350,6 +351,37 @@ global m_pay rho g lam tau
     u = integral(u_prime, 0, b_w/2);
     % y = b/2; Is this intentional? unused currently
     d_b = (u/b_w);
+
+end
+
+% Calculate tip deflection for tail
+function [d_b_h] = get_d_b_h(x,m_tot,Cl_htrim)
+global m_pay rho g lam tau
+    b_w = x(1);
+    c_w = x(2);
+    Cl_nom = x(3);
+    Cl_trim = x(4);
+    C_tw = x(5);
+    C_ww = x(6);
+    N = x(7);
+    b_h = x(8);
+    c_h = x(9);
+    Cl_hnom = x(10);
+    x_h = x(11);
+    SM_trim = x(12);
+    
+
+    L_0 = m_tot*((b_h*c_h*Clh_trim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N * (4/(pi*b_w));
+
+    E = 3e+9;
+    Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_h/2)).*((lam-1)/(lam+1)));
+    I =@(y) (1/2).*Gamma(y).*((tau.*c_h)^2).*C_tw.*C_ww;
+    Mx = @(y) (L_0/24).*(2.*b_h.^2.*sqrt(1-(4/b_h.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_h.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
+    u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
+    u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
+    u = integral(u_prime, 0, b_h/2);
+    % y = b/2; Is this intentional? unused currently
+    d_b_h = (u/b_h);
 
 end
 
@@ -384,7 +416,8 @@ try
     delta_x_pay = get_delta_x_pay(x,m_tot);
     
     %obj = -v;
-    obj = -delta_x_pay;
+    %obj = -delta_x_pay;
+    obj = -(v/9.7434+delta_x_pay/1.0533);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -410,6 +443,7 @@ try
     Cl_hnom = x(10);
     x_h = x(11);
     SM_trim = x(12);
+    N_trim = x(13);
 
     m_tot = get_m_tot(x);
     v = get_v(x,m_tot);
@@ -417,28 +451,30 @@ try
     F_d = get_F_d(x,v);
     d_b = get_d_b(x,m_tot);
     con_thrust_drag = F_d - T_max;
-    con_d_b = d_b - 0.10;
+    con_d_b = d_b - 0.05;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
     W = m_tot*g;
-    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
+    v_trim = sqrt((2*N_trim*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
     T_trim = get_T_max(v_trim);
     F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim);
     con_trim_thrust = F_dtrim - T_trim;
-    r_turn_trim = get_r_turn(x,v_trim);
+    r_turn_trim = ((v_trim^2)/(g*sqrt((N_trim^2) - 1)));
     con_trim_r_turn = r_turn_trim - 12.5;
 
 
 
     
-    intm = [con_thrust_drag;
+   intm = [con_thrust_drag;
         con_d_b;
         con_r_turn;
         con_elev_deflection;
         con_trim_thrust;
         con_trim_r_turn;
         ];
+
+
     has_invalid = any(isnan(intm) | isinf(intm));
     if has_invalid
         
@@ -446,7 +482,7 @@ try
         ceq = [1e6,1e6,1e6,1e6,1e6,1e6];
     else
         c = [];
-        ceq = max(0,intm);
+        ceq = intm;
     end
 catch
     c = [];
@@ -455,52 +491,7 @@ end
 
 end
 
-%Debug only
-function [c,ceq] = get_constraints_debug(x)
-    global g rho
-    b_w = x(1);
-    c_w = x(2);
-    Cl_nom = x(3);
-    Cl_trim = x(4);
-    C_tw = x(5);
-    C_ww = x(6);
-    N = x(7);
-    b_h = x(8);
-    c_h = x(9);
-    Cl_hnom = x(10);
-    x_h = x(11);
-    SM_trim = x(12);
 
-    m_tot = get_m_tot(x);
-    v = get_v(x,m_tot);
-    T_max = get_T_max(v);
-    F_d = get_F_d(x,v);
-    d_b = get_d_b(x,m_tot);
-    con_thrust_drag = F_d - T_max;
-    con_d_b = d_b - 0.10;
-    r_turn = get_r_turn(x,v);
-    con_r_turn = r_turn - 12.5;
-    delta_x_pay = get_delta_x_pay(x,m_tot)
-    [con_elev_deflection, Cl_htrim] = get_elev_deflection(x)
-    W = m_tot*g;
-    v_trim = sqrt((2*N*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)))
-    T_trim = get_T_max(v_trim)
-    F_dtrim = get_F_dtrim(x,v_trim,Cl_htrim)
-    con_trim_thrust = F_dtrim - T_trim;
-    r_turn_trim = get_r_turn(x,v_trim)
-    con_trim_r_turn = r_turn_trim - 12.5;
-
-
-
-    
-    intm = [con_thrust_drag;
-        con_d_b;
-        con_r_turn;
-        con_elev_deflection;
-        con_trim_thrust;
-        con_trim_r_turn;
-        ];
-end
 
 %    b_w = x(1);
 %    c_w = x(2);
@@ -514,31 +505,23 @@ end
 %    Cl_hnom = x(10);
 %    x_h = x(11);
 %    SM_trim = x(12);
+%    N_trim = x(13);
 
 % Optimization bounds
 %[print1,print2] = get_constraints_debug([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
-options = optimoptions('ga', 'Display', 'iter');
+options = optimoptions('fmincon', 'Display', 'iter','Algorithm','interior-point','ConstraintTolerance',1e-6);
 %options.TolCon = 0.03;
-options.PopulationSize = 200;
+%options.PopulationSize = 20;
 intcon = [];
-lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05];
-ub = [3,0.5,0.8,0.8,0.005,0.002,1.5,0.7,0.25,0.8,2,0.0501];
-[x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-%m_tot = get_m_tot()
-%x(11) = 0.2993;
-%print = get_constraints_debug(x);
+lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
+ub = [5,0.5,0.8,0.8,0.005,0.002,1.5,0.4,0.2,0.8,2,2,1.5];
+%[x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
+x0 = [2.7,0.2,0.7,0.46,0.005,0.002,1.1265,0.4,0.2,-0.1033,2,0.8,1.1];
+[x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
+
 %disp(x)
-
-%    b_w = 2,1105;
-%    c_w = 0.3334;
-%    Cl_nom = 0.8;
-%    Cl_trim = 0.52;
-%    C_tw = 0.0036;
-%    C_ww = 0.0018;
-%    N = 1.1265;
-%    b_h = 0.8312;
-%    c_h = 0.1143;
-%    Cl_hnom = 0.4313;
-%    x_h = 0.2993;
-%    SM_trim = 0.2176;
-
+%x_dbg = x
+%x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
+%m_tot = get_m_tot(x_dbg)
+obj = get_obj(x)
+[cons1,cons2] = get_constraints(x)
