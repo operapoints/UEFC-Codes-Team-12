@@ -424,7 +424,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/7.9737+delta_x_pay/0.5517);
+    obj = -(v/9.3501+delta_x_pay/1.4765);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -470,7 +470,7 @@ try
     r_turn_trim = ((v_trim^2)/(g*sqrt((N_trim^2) - 1)));
     con_trim_r_turn = r_turn_trim - 12.5;
     d_b_h = get_d_b_h(x,m_tot,Cl_htrim);
-    con_d_b_h = d_b_h-0.05;
+    con_d_b_h = d_b_h-0.02;
     con_h_thickness = 2*C_tw - tau*c_h;
 
 
@@ -479,26 +479,26 @@ try
    intm = [con_thrust_drag;
         con_d_b;
         con_r_turn;
-        con_elev_deflection;
-        con_trim_thrust;
+        con_elev_deflection;%Zeroed for delta_xpay convergence
+        con_trim_thrust;%Zeroed for delta_xpay convergence
         con_trim_r_turn;
         con_d_b_h;
-        con_h_thickness;
+        con_h_thickness*0;
         ];
 
 
     has_invalid = any(isnan(intm) | isinf(intm));
     if has_invalid
         
-        c = [];
-        ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+        ceq = [];
+        c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
     else
-        c = [];
-        ceq = intm;
+        ceq = [];
+        c = intm;
     end
 catch
-    c = [];
-    ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+    ceq = [];
+    c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -529,9 +529,21 @@ intcon = [];
 
 
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
-ub = [4,0.5,0.8,0.8,0.01,0.003,1.5,5,0.5,0.8,1.5,0.5,1.5];
+ub = [4,0.5,0.8,0.8,0.003,0.01,1.5,5,0.5,0.8,1.5,0.5,1.5];
 %[x,opt]=ga(@get_obj,13,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [1.6296,0.15,0.8,0.7253,0.0043,0.003,1.22,1.2,0.01,-0.6,1.0,0.05,1.2357];
+x0 = [2.6704;
+    0.2089;
+    0.8000;
+    0.5683;
+    0.0030;
+    0.0100;
+    1.0825;
+    1.4231;
+    0.0901;
+    -0.2748;
+    1.5000;
+    0.0500;
+    1.1011];
 %diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
@@ -540,4 +552,5 @@ disp(x)
 %x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
 obj = get_obj(x)
 [c,ceq]=get_constraints(x)
+
 
