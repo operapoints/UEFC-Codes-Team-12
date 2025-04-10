@@ -1,7 +1,7 @@
 warning('off', 'all');
 % Declare global variables here
 % All constants should be globals
-global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h spaneff mass_margin
+global m_pay rho g min_SM C_mw max_elev_deflection rho_caps tau lam rho_balsa mu rho_foam t_h spaneff mass_margin drag_margin
 
 
 m_pay = 0.3;
@@ -19,6 +19,7 @@ mu = 1.8e-5;
 t_h = 1.6e-3;
 spaneff = 0.95;
 mass_margin = 1.1;
+drag_margin = 1.1;
 
 
 % Signatures can be worked out later
@@ -128,7 +129,7 @@ end
 
 % Calculates drag force
 function [F_d] = get_F_d(x,v)
-    global rho mu tau spaneff
+    global rho mu tau spaneff mass_margin
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -174,13 +175,13 @@ function [F_d] = get_F_d(x,v)
     CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
     F_di_h = q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
-    F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
+    F_d = (F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h)*mass_margin;
 
 end
 
 % Calculates trim drag force
 function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
-    global rho mu tau spaneff
+    global rho mu tau spaneff mass_margin
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -226,7 +227,7 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
     F_di_h = q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
-    F_dtrim = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
+    F_dtrim = (F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h)*mass_margin;
 
 end
 
@@ -423,7 +424,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/8.6265+delta_x_pay/1.1767);
+    obj = -(v/7.9737+delta_x_pay/0.5517);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
