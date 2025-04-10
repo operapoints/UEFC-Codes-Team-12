@@ -168,7 +168,7 @@ function [F_d] = get_F_d(x,v)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.01;
+    CDp_h    = 0.02;
     F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
@@ -220,7 +220,7 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.01;
+    CDp_h    = 0.02;
     F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
@@ -374,8 +374,11 @@ global m_pay rho g lam tau
     N_trim = x(13);
     
     %The factor of 1.5 in front is to account for control forces
-    L_0 = 1*m_tot*((b_h*c_h*Cl_htrim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N_trim * (4/(pi*b_h));
-
+    L_0a = 1*m_tot*((b_h*c_h*Cl_htrim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N_trim * (4/(pi*b_h));
+    L_0b = 1*m_tot*((b_h*c_h*Cl_hnom)/(Cl_nom*b_w*c_w+Cl_hnom*b_h*c_h)) * g * N * (4/(pi*b_h));
+    L_0 = max(abs(L_0a),abs(L_0b));
+    %_h = c_h
+    %meanhthickness = 0.5*tau*c_h-(C_tw/2)
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_h/2)).*((lam-1)/(lam+1)));
     I =@(y) 2*((0.5.*Gamma(y).*tau.*c_h-(C_tw/2))^2).*C_tw.*C_ww;
@@ -420,7 +423,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/9.2825+delta_x_pay/2.1604);
+    obj = -(v/8.6265+delta_x_pay/1.1767);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -433,7 +436,7 @@ end
 % c should not be used unless we need equality constraints
 function [c,ceq] = get_constraints(x)
 try    
-    global g rho
+    global g rho tau
     b_w = x(1);
     c_w = x(2);
     Cl_nom = x(3);
@@ -454,7 +457,7 @@ try
     F_d = get_F_d(x,v);
     d_b = get_d_b(x,m_tot);
     con_thrust_drag = F_d - T_max;
-    con_d_b = d_b-0.1;
+    con_d_b = d_b-0.05;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
@@ -466,7 +469,8 @@ try
     r_turn_trim = ((v_trim^2)/(g*sqrt((N_trim^2) - 1)));
     con_trim_r_turn = r_turn_trim - 12.5;
     d_b_h = get_d_b_h(x,m_tot,Cl_htrim);
-    con_d_b_h = d_b_h-0.1;
+    con_d_b_h = d_b_h-0.05;
+    con_h_thickness = 2*C_tw - tau*c_h;
 
 
 
@@ -478,6 +482,7 @@ try
         con_trim_thrust;
         con_trim_r_turn;
         con_d_b_h;
+        con_h_thickness;
         ];
 
 
@@ -485,14 +490,14 @@ try
     if has_invalid
         
         c = [];
-        ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+        ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
     else
         c = [];
         ceq = intm;
     end
 catch
     c = [];
-    ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+    ceq = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -523,14 +528,15 @@ intcon = [];
 
 
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
-ub = [5,0.5,0.8,0.8,0.01,0.003,1.5,5,0.5,0.8,1.5,0.5,1.5];
+ub = [4,0.5,0.8,0.8,0.01,0.003,1.5,5,0.5,0.8,1.5,0.5,1.5];
 %[x,opt]=ga(@get_obj,13,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [2,0.15,0.7,0.46,0.005,0.002,1.1265,1.5,0.1,-0.1033,1.0,0.8,1.1];
-diff = x0-ub;
+x0 = [1.6296,0.15,0.8,0.7253,0.0043,0.003,1.22,1.2,0.01,-0.6,1.0,0.05,1.2357];
+%diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
 disp(x)
 %x_dbg = x
 %x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
 obj = get_obj(x)
+[c,ceq]=get_constraints(x)
 
