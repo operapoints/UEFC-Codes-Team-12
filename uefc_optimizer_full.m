@@ -169,7 +169,7 @@ function [F_d] = get_F_d(x,v)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.02;
+    CDp_h    = 0.025;
     F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
@@ -221,7 +221,7 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.02;
+    CDp_h    = 0.025;
     F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
@@ -424,7 +424,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/9.3501+delta_x_pay/1.4765);
+    obj = -(v/9.2607+delta_x_pay/1.4309);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -483,7 +483,7 @@ try
         con_trim_thrust;%Zeroed for delta_xpay convergence
         con_trim_r_turn;
         con_d_b_h;
-        con_h_thickness*0;
+        con_h_thickness;
         ];
 
 
@@ -531,19 +531,19 @@ intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
 ub = [4,0.5,0.8,0.8,0.003,0.01,1.5,5,0.5,0.8,1.5,0.5,1.5];
 %[x,opt]=ga(@get_obj,13,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [2.6704;
-    0.2089;
+x0 = [2.5728;
+    0.1932;
     0.8000;
-    0.5683;
+    0.7994;
     0.0030;
     0.0100;
-    1.0825;
-    1.4231;
-    0.0901;
-    -0.2748;
+    1.0829;
+    1.7487;
+    0.1232;
+    0.0137;
     1.5000;
     0.0500;
-    1.1011];
+    1.0409];
 %diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
