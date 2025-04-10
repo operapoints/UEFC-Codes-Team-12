@@ -168,11 +168,11 @@ function [F_d] = get_F_d(x,v)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.015;
-    F_dp_h = q*S_h*CDp_h;
+    CDp_h    = 0.01;
+    F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_hnom^2)/(pi*spaneff*(b_h/c_h));
-    F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
+    F_di_h = q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
     F_d = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
 
@@ -220,11 +220,11 @@ function [F_dtrim] = get_F_dtrim(x,v,Cl_htrim)
     F_di_w = q*S_w*CDi_w;
 
 
-    CDp_h    = 0.015;
-    F_dp_h = q*S_h*CDp_h;
+    CDp_h    = 0.01;
+    F_dp_h = 1.5*q*S_h*CDp_h;
 
     CDi_h = (Cl_htrim^2)/(pi*spaneff*(b_h/c_h));
-    F_di_h = 1.5*q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
+    F_di_h = q*S_h*CDi_h; % Factor of 1.5 to account for the rudder
 
     F_dtrim = F_d_fuse+F_di_w+F_dp_w+F_di_h+F_dp_h;
 
@@ -346,7 +346,7 @@ global m_pay rho g lam tau
 
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_w/2)).*((lam-1)/(lam+1)));
-    I =@(y) 2*((0.5.*Gamma(y).*tau.*c_h-(C_tw/2))^2).*C_tw.*C_ww;
+    I =@(y) 2*(((1/2).*Gamma(y).*tau.*c_w-(C_tw/2))^2).*C_tw.*C_ww;
     Mx = @(y) (L_0/24).*(2.*b_w.^2.*sqrt(1-(4/b_w.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_w.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
@@ -371,14 +371,15 @@ global m_pay rho g lam tau
     Cl_hnom = x(10);
     x_h = x(11);
     SM_trim = x(12);
+    N_trim = x(13);
     
     %The factor of 1.5 in front is to account for control forces
-    L_0 = 1.5*m_tot*((b_h*c_h*Cl_htrim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N * (4/(pi*b_w));
+    L_0 = 1*m_tot*((b_h*c_h*Cl_htrim)/(Cl_trim*b_w*c_w+Cl_htrim*b_h*c_h)) * g * N_trim * (4/(pi*b_h));
 
     E = 3e+9;
     Gamma =  @(y) 1+((lam-1)/(lam + 1))-(((2.*y)/(b_h/2)).*((lam-1)/(lam+1)));
     I =@(y) 2*((0.5.*Gamma(y).*tau.*c_h-(C_tw/2))^2).*C_tw.*C_ww;
-    Mx = @(y) (L_0/24).*(2.*b_h.^2.*sqrt(1-(4/b_h.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_h.^2).*y.^2) - 3.*pi.*b_w.*y + 6.*b_w.*y.*asin(2.*y/b_w));
+    Mx = @(y) (L_0/24).*(2.*b_h.^2.*sqrt(1-(4/b_h.^2).*y.^2) + 4.*(y.^2).*sqrt(1-(4/b_h.^2).*y.^2) - 3.*pi.*b_h.*y + 6.*b_h.*y.*asin(2.*y/b_h));
     u_doubleprime = @(y) arrayfun(@(y) (Mx(y))/(E.*I(y)),y);
     u_prime = @(y) arrayfun(@(y)integral(u_doubleprime, 0, y),y);
     u = integral(u_prime, 0, b_h/2);
@@ -419,7 +420,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/8.3492+delta_x_pay/1.2080);
+    obj = -(v/9.2825+delta_x_pay/2.1604);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -453,7 +454,7 @@ try
     F_d = get_F_d(x,v);
     d_b = get_d_b(x,m_tot);
     con_thrust_drag = F_d - T_max;
-    con_d_b = d_b-0.01;
+    con_d_b = d_b-0.1;
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
@@ -465,7 +466,7 @@ try
     r_turn_trim = ((v_trim^2)/(g*sqrt((N_trim^2) - 1)));
     con_trim_r_turn = r_turn_trim - 12.5;
     d_b_h = get_d_b_h(x,m_tot,Cl_htrim);
-    con_d_b_h = d_b_h-0.01;
+    con_d_b_h = d_b_h-0.1;
 
 
 
@@ -515,17 +516,20 @@ end
 % Optimization bounds
 %[print1,print2] = get_constraints_debug([1.1,0.13,0.7,0.65,0.002,0.005,1.8,0.15,0.05,0,1,0.05])
 options = optimoptions('fmincon', 'Display', 'iter','Algorithm','interior-point','ConstraintTolerance',1e-6);
+%options = optimoptions('ga', 'Display', 'iter');
 %options.TolCon = 0.03;
 %options.PopulationSize = 20;
 intcon = [];
+
+
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
-ub = [5,0.5,0.8,0.8,0.005,0.002,1.5,5,0.5,0.8,1.5,2,1.5];
-%[x,opt]=ga(@get_obj,12,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [3,0.2,0.7,0.46,0.005,0.002,1.1265,2,0.1,-0.1033,1.0,0.8,1.1];
+ub = [5,0.5,0.8,0.8,0.01,0.003,1.5,5,0.5,0.8,1.5,0.5,1.5];
+%[x,opt]=ga(@get_obj,13,[],[],[],[],lb,ub,@get_constraints,intcon,options)
+x0 = [2,0.15,0.7,0.46,0.005,0.002,1.1265,1.5,0.1,-0.1033,1.0,0.8,1.1];
 diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
-%disp(x)
+disp(x)
 %x_dbg = x
 %x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
 obj = get_obj(x)
