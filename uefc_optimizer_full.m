@@ -10,10 +10,10 @@ g = 9.8066;
 min_SM = 0.05;
 C_mw = -0.13;
 max_elev_deflection = 10*(pi/180);
-rho_caps = 80; 
+rho_caps = 500; 
 tau = 0.12;
 lam = 0.5;
-rho_balsa = 0;
+rho_balsa = 500;
 rho_foam = 32;
 mu = 1.8e-5;
 t_h = 1.6e-3;
@@ -274,7 +274,7 @@ global g rho_foam lam tau rho_balsa t_h
     W_caps = 2*C_tw*C_ww*b_w*rho_balsa*g;
     W_tail = (4/3)*Afac*rho_foam*g*tau_w*S_h^1.5*(b_h/c_h)^(-0.5)*(lam_w^2+lam_w+1)/(lam_w+1)^2;
     W_caps_h = 2*C_tw*C_ww*b_h*rho_balsa*g;
-    W_wing_tail_weight = Wwing + W_caps + W_tail+W_caps_h;
+    W_wing_tail_weight = Wwing + W_caps + 1.5*W_tail+1.5*W_caps_h;
 
 end
 
@@ -424,7 +424,7 @@ try
     
     %obj = -v;
     %obj = -delta_x_pay;
-    obj = -(v/9.2607+delta_x_pay/1.4309);
+    obj = -(v/8.9987+delta_x_pay/0.7918);
     % TODO: Normalize obj by sub objectives
 catch
     obj = 1e6;
@@ -531,19 +531,19 @@ intcon = [];
 lb = [0,0,0,0,0,0,1,0,0,-0.6,1,0.05,1];
 ub = [4,0.5,0.8,0.8,0.003,0.01,1.5,5,0.5,0.8,1.5,0.5,1.5];
 %[x,opt]=ga(@get_obj,13,[],[],[],[],lb,ub,@get_constraints,intcon,options)
-x0 = [1.6223;
-    0.1181;
+x0 = [2.2435;
+    0.2005;
     0.8000;
     0.8000;
-    0.0023;
+    0.0017;
     0.0100;
-    1.2204;
-    0.6660;
-    0.0481;
-    0.6561;
-    1.0000;
+    1.0935;
+    1.3226;
+    0.0967;
+    0.2043;
+    1.5000;
     0.0500;
-    1.2204];
+    1.0659];
 %diff = x0-ub;
 [x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
