@@ -557,8 +557,8 @@ obj = get_obj(x0)
 [c,ceq]=get_constraints(x0)
 
 % Define sweep ranges
-area_range = linspace(0.1, 0.7, 10);
-AR_range = linspace(2, 14, 10);
+area_range = linspace(0.05, 0.2, 20);
+AR_range = linspace(8, 20, 20);
 [AreaGrid, ARGrid] = meshgrid(area_range, AR_range);
 
 % Initialize matrices
@@ -567,8 +567,8 @@ num_constraints = 8;  % To determine once we evaluate a sample
 
 % Preallocate constraints (we'll determine size dynamically first)
 sample_x = x0;
-sample_x(1) = sqrt(AR_range(1) * area_range(1));
-sample_x(2) = area_range(1) / sample_x(1);
+sample_x(8) = sqrt(AR_range(1) * area_range(1));
+sample_x(9) = area_range(1) / sample_x(1);
 [c_sample, ~] = get_constraints(sample_x);
 num_constraints = numel(c_sample);
 C = nan([size(AreaGrid), num_constraints]);
@@ -582,8 +582,8 @@ for i = 1:numel(AreaGrid)
     chord = area / span;
     
     x = x0;
-    x(1) = span;
-    x(2) = chord;
+    x(8) = span;
+    x(9) = chord;
     
     [c, ~] = get_constraints(x);
     Z(i) = get_obj(x);
@@ -599,7 +599,7 @@ contourf(AreaGrid, ARGrid, Z, 30, 'LineColor', 'none');
 clim([-4 -1]);
 colormap(parula);
 colorbar;
-xlabel('Main Wing Area');
+xlabel('Tail Wing Area');
 ylabel('Aspect Ratio');
 title('Objective Function with Constraint Boundaries');
 hold on;
@@ -634,8 +634,8 @@ end
 
 
 % Mark the original point
-area0 = x0(1) * x0(2);
-AR0 = x0(1) / x0(2);
+area0 = x0(8) * x0(9);
+AR0 = x0(8) / x0(9);
 design_point = plot(area0, AR0, 'rx', 'MarkerSize', 10, 'LineWidth', 2);
 
 % Only keep non-empty handles and corresponding labels

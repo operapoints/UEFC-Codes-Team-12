@@ -68,7 +68,7 @@ M_w = S_w*c_w*C_mw;
 x_np = (x_h*S_h*a_h)/(S_h*a_h+S_w*a_w);
 x_cg = (x_h*S_h*Cl_hnom-M_w)/(Cl_nom*S_w+S_h*Cl_hnom);
 dalpha_dalphae = -(S_h*a_h*(x_cg-x_h))/(S_w*a_w*x_cg+S_h*a_h*(x_cg-x_h));
-
+;
 delta_x_pay = (x_np - (c_w*SM_trim+x_cg))*(m_tot/m_pay);
 
 
@@ -464,7 +464,6 @@ try
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
-    con_cl_htrim = Cl_htrim - 0.8;
     W = m_tot*g;
     v_trim = sqrt((2*N_trim*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
     T_trim = get_T_max(v_trim);
@@ -475,6 +474,7 @@ try
     d_b_h = get_d_b_h(x,m_tot,Cl_htrim);
     con_d_b_h = d_b_h-0.02;
     con_h_thickness = 2*C_tw - tau*c_h;
+    C_d = F_d / (0.5*1.225*v^2*b_w*c_w);
 
 
 
@@ -487,7 +487,6 @@ try
         con_trim_r_turn;
         con_d_b_h;
         con_h_thickness;
-        con_Cl_htrim;
         ];
 
 
@@ -495,14 +494,14 @@ try
     if has_invalid
         
         ceq = [];
-        c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+        c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
     else
         ceq = [];
         c = intm;
     end
 catch
     ceq = [];
-    c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+    c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -556,6 +555,7 @@ x0 = [2.2435;
 %x_dbg = [2.0256,0.1236,0.8,0.6655,0.0050,0.0020,1.214,0.4,0.2,-0.1379,2,0.05,1.2019]
 obj = get_obj(x0)
 [c,ceq]=get_constraints(x0)
+
 
 
 
