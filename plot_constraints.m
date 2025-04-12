@@ -102,6 +102,7 @@ x_cgtrim = x_np-c_w*SM_trim;
 Cl_htrim = (-M_w-S_w*Cl_trim*x_cgtrim)/(S_h*(x_cgtrim-x_h));
 delta_alpha = (Cl_trim-Cl_nom)/a_w;
 
+dalpha_dalphae_trim = -(S_h*a_h*((x_np - (c_w*SM_trim))-x_h))/(S_w*a_w*(x_np - (c_w*SM_trim))+S_h*a_h*((x_np - (c_w*SM_trim))-x_h));
 elev_deflection = (Cl_htrim-Cl_hnom-delta_alpha*a_h)/a_h;
 con_elev_deflection = elev_deflection - max_elev_deflection;
 
@@ -464,7 +465,6 @@ try
     r_turn = get_r_turn(x,v);
     con_r_turn = r_turn - 12.5;
     [con_elev_deflection, Cl_htrim] = get_elev_deflection(x);
-    con_cl_htrim = Cl_htrim - 0.8;
     W = m_tot*g;
     v_trim = sqrt((2*N_trim*W)/(rho*(b_w*c_w*Cl_trim+b_h*c_h*Cl_htrim)));
     T_trim = get_T_max(v_trim);
@@ -487,7 +487,6 @@ try
         con_trim_r_turn;
         con_d_b_h;
         con_h_thickness;
-        con_Cl_htrim;
         ];
 
 
@@ -495,14 +494,14 @@ try
     if has_invalid
         
         ceq = [];
-        c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+        c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
     else
         ceq = [];
         c = intm;
     end
 catch
     ceq = [];
-    c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
+    c = [1e6,1e6,1e6,1e6,1e6,1e6,1e6,1e6];
 end
 
 end
@@ -549,7 +548,7 @@ x0 = [2.2435;
     0.0500;
     1.0659];
 %diff = x0-ub;
-[x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
+%[x,opt]=fmincon(@get_obj,x0,[],[],[],[],lb,ub,@get_constraints,options)
 
 %disp(x)
 %x_dbg = x
@@ -557,6 +556,91 @@ x0 = [2.2435;
 obj = get_obj(x0)
 [c,ceq]=get_constraints(x0)
 
+% Define sweep ranges
+area_range = linspace(0.1, 0.7, 10);
+AR_range = linspace(2, 14, 10);
+[AreaGrid, ARGrid] = meshgrid(area_range, AR_range);
+
+% Initialize matrices
+Z = nan(size(AreaGrid));
+num_constraints = 8;  % To determine once we evaluate a sample
+
+% Preallocate constraints (we'll determine size dynamically first)
+sample_x = x0;
+sample_x(1) = sqrt(AR_range(1) * area_range(1));
+sample_x(2) = area_range(1) / sample_x(1);
+[c_sample, ~] = get_constraints(sample_x);
+num_constraints = numel(c_sample);
+C = nan([size(AreaGrid), num_constraints]);
+
+% Loop over grid
+for i = 1:numel(AreaGrid)
+    area = AreaGrid(i);
+    AR = ARGrid(i);
+    
+    span = sqrt(AR * area);
+    chord = area / span;
+    
+    x = x0;
+    x(1) = span;
+    x(2) = chord;
+    
+    [c, ~] = get_constraints(x);
+    Z(i) = get_obj(x);
+    
+    for j = 1:num_constraints
+        C(i + (j-1)*numel(AreaGrid)) = c(j);  % Each layer is one constraint
+    end
+end
+
+% Plot objective contour
+figure;
+contourf(AreaGrid, ARGrid, Z, 30, 'LineColor', 'none');
+clim([-4 -1]);
+colormap(parula);
+colorbar;
+xlabel('Main Wing Area');
+ylabel('Aspect Ratio');
+title('Objective Function with Constraint Boundaries');
+hold on;
+
+% Overlay isolines: thin, solid black lines
+[~, h_obj] = contour(AreaGrid, ARGrid, Z, 30, 'w-', 'LineWidth', 0.5);
+
+% Plot dotted contours for each constraint c(i) == 0
+
+colors = lines(num_constraints); % Distinct colors
+legend_entries = gobjects(num_constraints,1); % Preallocate
+constraint_labels = {'Nominal drag';
+    'Wing deflection';
+    'Nominal turn radius';
+    'Elevator travel';
+    'Trim drag';
+    'Trim turn radius';
+    'Elevator deflection';
+    'Elevator thickness'};
+
+for j = 1:num_constraints
+    [~, h] = contour(AreaGrid, ARGrid, C(:,:,j), [0 0], '--', ...
+        'LineWidth', 1.5, 'LineColor', colors(j,:));
+    
+    % Store the contour line's graphics handle for the legend
+    if ~isempty(h)
+        legend_entries(j) = h; % h is a handle to the line object
+    end
+end
 
 
+
+
+% Mark the original point
+area0 = x0(1) * x0(2);
+AR0 = x0(1) / x0(2);
+design_point = plot(area0, AR0, 'rx', 'MarkerSize', 10, 'LineWidth', 2);
+
+% Only keep non-empty handles and corresponding labels
+valid = isgraphics(legend_entries);
+legend([design_point; legend_entries(valid)], ...
+       [{'Design Point'}; constraint_labels(valid)], ...
+       'Location', 'eastoutside');
 
