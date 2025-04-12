@@ -20,11 +20,12 @@ washout_diff = -5.
 tip_angle = root_angle + washout_diff
 ##################
 # Defining tip chord based on chosen taper ratio and root chord
-taper_ratio = .6
-croot = .5
-ctip = taper_ratio * croot
+taper_ratio = 2
+cmean = 0.2005
+croot = 2*taper_ratio*cmean/(taper_ratio+1)
+ctip = croot / taper_ratio
 ##################
-PV = UEFC_wing.UEFC_wing(b=2, croot= .4, ctip= ctip , agroot=root_angle, agtip=tip_angle, dihedral=10.)
+PV = UEFC_wing.UEFC_wing(b= 2.244, croot = croot, ctip= ctip , agroot=5.09, agtip=0.09, dihedral=6.19)
 
 # Plot the wing geometry
 PV.plotgeom()
